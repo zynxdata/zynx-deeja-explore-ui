@@ -66,13 +66,13 @@ const HeroSection = () => {
           {/* Right side - Character illustration area */}
           <div className="flex justify-center lg:justify-end">
             <div className="relative">
-              {/* Placeholder for character - could be replaced with actual Deeja character */}
+              {/* Deeja Character */}
               <div className="w-80 h-80 bg-gradient-to-br from-agi-yellow/20 to-agi-orange/20 rounded-full flex items-center justify-center backdrop-blur-sm border-2 border-white/30 animate-float">
-                <div className="text-center">
-                  <Brain className="h-20 w-20 text-white mx-auto mb-4 animate-pulse" />
-                  <p className="text-white font-semibold text-lg">Deeja Character</p>
-                  <p className="text-white/70">Cultural AGI Assistant</p>
-                </div>
+                <img 
+                  src="/lovable-uploads/5eec2c28-0329-4a1d-a76d-a0aa9ccec7ed.png" 
+                  alt="Deeja - Cultural AGI Assistant" 
+                  className="w-64 h-64 object-contain animate-pulse"
+                />
               </div>
               
               {/* Floating elements around character */}
