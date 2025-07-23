@@ -18,10 +18,10 @@ const CreateOwnerUser = () => {
     setError('');
 
     try {
-      // Create the owner user with a default password
+      // Create the owner user with the specified credentials
       const { data, error: signUpError } = await supabase.auth.signUp({
-        email: 'owner@zynx.com',
-        password: 'ZynxOwner2024!',
+        email: 'zynx@zynxdata.com',
+        password: 'Zynx@12345!',
         options: {
           data: {
             username: 'Z0000',
@@ -37,7 +37,7 @@ const CreateOwnerUser = () => {
 
       if (data.user) {
         setMessage(`Owner user created successfully! 
-        Email: owner@zynx.com
+        Email: zynx@zynxdata.com
         Username: Z0000
         User ID: ${data.user.id}
         
@@ -66,12 +66,12 @@ const CreateOwnerUser = () => {
         
         <div className="space-y-2">
           <Label>Email</Label>
-          <Input value="owner@zynx.com" disabled />
+          <Input value="zynx@zynxdata.com" disabled />
         </div>
 
         <div className="space-y-2">
           <Label>Default Password</Label>
-          <Input value="ZynxOwner2024!" type="password" disabled />
+          <Input value="Zynx@12345!" type="password" disabled />
         </div>
 
         {message && (
@@ -98,8 +98,8 @@ const CreateOwnerUser = () => {
 
         <div className="text-sm text-muted-foreground">
           <p>Default credentials:</p>
-          <p>Email: owner@zynx.com</p>
-          <p>Password: ZynxOwner2024!</p>
+          <p>Email: zynx@zynxdata.com</p>
+          <p>Password: Zynx@12345!</p>
           <p>Username: Z0000</p>
         </div>
       </CardContent>
