@@ -1,1 +1,28 @@
+
+# The project id is set by default
 project_id = "uuvaefwnolpdwtwpuzrn"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+site_url = "https://localhost:3000"
+additional_redirect_urls = ["https://lovable.dev", "https://project-name.lovable.app"]
+jwt_expiry = 3600
+enable_signup = true
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+image_transformation = { enabled = true }
+
+[functions.rate-limiter]
+verify_jwt = false
+
+[functions.security-monitor]
+verify_jwt = false

@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./components/auth/AuthProvider";
 import SecureErrorBoundary from "./components/security/SecureErrorBoundary";
+import SecurityHeaders from "./components/security/SecurityHeaders";
 import Navigation from "./components/Navigation";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Index from "./pages/Index";
@@ -32,6 +33,7 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <SecureErrorBoundary>
+    <SecurityHeaders />
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AuthProvider>

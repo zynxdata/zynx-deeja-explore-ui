@@ -9,9 +9,16 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from './AuthProvider';
 import { toast } from 'sonner';
 import { Shield, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { useAdvancedInputValidation, enhancedEmailSchema, enhancedPasswordSchema } from '@/components/security/AdvancedInputValidator';
+import { useSecurityMonitor } from '@/hooks/useSecurityMonitor';
+import { useServerRateLimit } from '@/hooks/useServerRateLimit';
 
 const AuthPage = () => {
   const { user, signIn, signUp } = useAuth();
+  const { validateInputAdvanced, sanitizeInputAdvanced } = useAdvancedInputValidation();
+  const { logFailedAuth, logSuspiciousActivity } = useSecurityMonitor();
+  const { checkRateLimit } = useServerRateLimit();
+  
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,20 +32,31 @@ const AuthPage = () => {
     return <Navigate to="/" replace />;
   }
 
-  const validateInput = () => {
-    if (!email || !password) {
-      setError('กรุณากรอกอีเมลและรหัสผ่าน');
+  const validateInput = async () => {
+    // Server-side rate limiting check
+    const rateLimitResult = await checkRateLimit(
+      email || 'anonymous', 
+      'auth_attempt', 
+      5, // max 5 attempts
+      300000 // per 5 minutes
+    );
+
+    if (!rateLimitResult.allowed) {
+      setError('พยายามเข้าสู่ระบบมากเกินไป กรุณารอ 5 นาที');
       return false;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('กรุณากรอกอีเมลให้ถูกต้อง');
+    // Enhanced email validation
+    const emailValidation = validateInputAdvanced(enhancedEmailSchema, email, 'email');
+    if (!emailValidation.isValid) {
+      setError(emailValidation.error || 'อีเมลไม่ถูกต้อง');
       return false;
     }
 
-    if (password.length < 6) {
-      setError('รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร');
+    // Enhanced password validation
+    const passwordValidation = validateInputAdvanced(enhancedPasswordSchema, password, 'password');
+    if (!passwordValidation.isValid) {
+      setError(passwordValidation.error || 'รหัสผ่านไม่ถูกต้อง');
       return false;
     }
 
@@ -54,24 +72,43 @@ const AuthPage = () => {
     e.preventDefault();
     setError('');
 
-    if (!validateInput()) return;
+    if (!(await validateInput())) return;
 
     setLoading(true);
 
     try {
+      const sanitizedEmail = sanitizeInputAdvanced(email);
+      
       const { error } = isLogin 
-        ? await signIn(email, password)
-        : await signUp(email, password);
+        ? await signIn(sanitizedEmail, password)
+        : await signUp(sanitizedEmail, password);
 
       if (error) {
+        // Log failed authentication attempt
+        logFailedAuth({
+          email: sanitizedEmail,
+          error: error.message,
+          action: isLogin ? 'signin' : 'signup'
+        });
+
         if (error.message.includes('Invalid login credentials')) {
           setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
         } else if (error.message.includes('User already registered')) {
           setError('อีเมลนี้ถูกใช้งานแล้ว กรุณาเข้าสู่ระบบแทน');
         } else if (error.message.includes('Email not confirmed')) {
           setError('กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ');
+        } else if (error.message.includes('Signup not allowed')) {
+          setError('ไม่อนุญาตให้สมัครสมาชิกในขณะนี้');
         } else {
           setError('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+          
+          // Log suspicious activity for unusual errors
+          logSuspiciousActivity({
+            email: sanitizedEmail,
+            error: error.message,
+            action: isLogin ? 'signin' : 'signup',
+            reason: 'Unusual authentication error'
+          });
         }
       } else {
         if (isLogin) {
@@ -81,7 +118,15 @@ const AuthPage = () => {
         }
       }
     } catch (err) {
+      console.error('Authentication error:', err);
       setError('เกิดข้อผิดพลาดที่ไม่คาดคิด');
+      
+      logSuspiciousActivity({
+        email: email,
+        error: err instanceof Error ? err.message : 'Unknown error',
+        action: isLogin ? 'signin' : 'signup',
+        reason: 'Unexpected authentication error'
+      });
     } finally {
       setLoading(false);
     }
@@ -119,6 +164,7 @@ const AuthPage = () => {
                   className="pl-10"
                   disabled={loading}
                   required
+                  maxLength={254}
                 />
               </div>
             </div>
@@ -136,6 +182,7 @@ const AuthPage = () => {
                   className="pl-10 pr-10"
                   disabled={loading}
                   required
+                  maxLength={128}
                 />
                 <Button
                   type="button"
@@ -167,6 +214,7 @@ const AuthPage = () => {
                     className="pl-10"
                     disabled={loading}
                     required
+                    maxLength={128}
                   />
                 </div>
               </div>
