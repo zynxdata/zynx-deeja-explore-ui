@@ -14,6 +14,7 @@ import Chat from "./pages/Chat";
 import ImageGenerator from "./pages/ImageGenerator";
 import Research from "./pages/Research";
 import AuthPage from "./components/auth/AuthPage";
+import AdminSetup from "./pages/AdminSetup";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -43,6 +44,7 @@ const App = () => (
             <Navigation />
             <Routes>
               <Route path="/auth" element={<AuthPage />} />
+              <Route path="/admin-setup" element={<AdminSetup />} />
               <Route path="/" element={<Index />} />
               <Route path="/research" element={<Research />} />
               <Route 
