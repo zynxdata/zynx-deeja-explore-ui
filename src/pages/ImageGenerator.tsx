@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,17 +7,44 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Image, Download, Settings, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useInputValidation, textSchema, rateLimiter } from "@/components/security/InputValidator";
+import { useSecureStorage } from "@/hooks/useSecureStorage";
 
 const ImageGenerator = () => {
+  const { user } = useAuth();
+  const { validateInput, sanitizeInput } = useInputValidation();
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
-  const [apiKey, setApiKey] = useState("");
   const [showSettings, setShowSettings] = useState(false);
+
+  // Use secure storage for API key
+  const { 
+    value: apiKey, 
+    setValue: setApiKey, 
+    loading: storageLoading 
+  } = useSecureStorage("openai-api-key", "", { 
+    encrypt: true, 
+    expiry: 7 * 24 * 60 * 60 * 1000 // 7 days
+  });
 
   const generateImage = async () => {
     if (!prompt.trim()) {
       toast.error("กรุณาใส่คำอธิบายรูปภาพ");
+      return;
+    }
+
+    // Validate input
+    const { isValid, error } = validateInput(textSchema, prompt);
+    if (!isValid) {
+      toast.error(error || 'คำอธิบายไม่ถูกต้อง');
+      return;
+    }
+
+    // Check rate limiting (max 5 image generations per 10 minutes)
+    if (!rateLimiter.checkRate(`image-${user?.id}`, 5, 600000)) {
+      toast.error('คุณสร้างรูปภาพเร็วเกินไป กรุณารอ 10 นาที');
       return;
     }
 
@@ -27,6 +55,7 @@ const ImageGenerator = () => {
     }
 
     setIsGenerating(true);
+    const sanitizedPrompt = sanitizeInput(prompt);
 
     try {
       const response = await fetch("https://api.openai.com/v1/images/generations", {
@@ -37,7 +66,7 @@ const ImageGenerator = () => {
         },
         body: JSON.stringify({
           model: "dall-e-3",
-          prompt: prompt,
+          prompt: sanitizedPrompt,
           n: 1,
           size: "1024x1024",
           quality: "standard",
@@ -45,28 +74,44 @@ const ImageGenerator = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to generate image");
+        if (response.status === 401) {
+          throw new Error("API Key ไม่ถูกต้อง");
+        } else if (response.status === 429) {
+          throw new Error("มีการใช้งานเกินขีดจำกัด กรุณาลองใหม่ภายหลัง");
+        } else {
+          throw new Error("เกิดข้อผิดพลาดในการสร้างรูปภาพ");
+        }
       }
 
       const data = await response.json();
-      const imageUrl = data.data[0].url;
       
-      setGeneratedImages(prev => [imageUrl, ...prev]);
+      if (!data.data?.[0]?.url) {
+        throw new Error("ไม่สามารถสร้างรูปภาพได้");
+      }
+
+      const imageUrl = data.data[0].url;
+      setGeneratedImages(prev => [imageUrl, ...prev.slice(0, 9)]); // Keep only last 10 images
       toast.success("สร้างรูปภาพสำเร็จ!");
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("เกิดข้อผิดพลาดในการสร้างรูปภาพ");
+    } catch (error: any) {
+      console.error("Image generation error:", error);
+      toast.error(error.message || "เกิดข้อผิดพลาดในการสร้างรูปภาพ");
     } finally {
       setIsGenerating(false);
     }
   };
 
   const saveApiKey = () => {
+    const { isValid, error } = validateInput(textSchema, apiKey);
+    if (!isValid) {
+      toast.error(error || 'API Key ไม่ถูกต้อง');
+      return;
+    }
+    
     if (!apiKey.trim()) {
       toast.error("กรุณาใส่ API Key");
       return;
     }
-    localStorage.setItem("openai-api-key", apiKey);
+    
     setShowSettings(false);
     toast.success("บันทึก API Key แล้ว");
   };
@@ -74,11 +119,15 @@ const ImageGenerator = () => {
   const downloadImage = async (imageUrl: string, index: number) => {
     try {
       const response = await fetch(imageUrl);
+      if (!response.ok) {
+        throw new Error("ไม่สามารถดาวน์โหลดรูปภาพได้");
+      }
+      
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `ai-generated-image-${index + 1}.png`;
+      a.download = `ai-generated-image-${Date.now()}-${index + 1}.png`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success("ดาวน์โหลดรูปภาพแล้ว");
@@ -86,6 +135,17 @@ const ImageGenerator = () => {
       toast.error("เกิดข้อผิดพลาดในการดาวน์โหลด");
     }
   };
+
+  if (storageLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center">
+        <Card className="p-8 text-center">
+          <Image className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
+          <p className="text-muted-foreground">กำลังโหลด...</p>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
@@ -119,6 +179,9 @@ const ImageGenerator = () => {
                 />
                 <Button onClick={saveApiKey}>บันทึก</Button>
               </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                API Key จะถูกเข้ารหัสและเก็บในเบราว์เซอร์ของคุณอย่างปลอดภัย
+              </p>
             </Card>
           )}
 
@@ -138,12 +201,16 @@ const ImageGenerator = () => {
                     onChange={(e) => setPrompt(e.target.value)}
                     rows={6}
                     className="resize-none"
+                    maxLength={1000}
                   />
                   
                   <div className="flex items-center gap-2">
                     <Badge variant={apiKey ? "default" : "destructive"} className="text-xs">
                       {apiKey ? "API Key ตั้งค่าแล้ว" : "ยังไม่ได้ตั้งค่า API Key"}
                     </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      {prompt.length}/1000 ตัวอักษร
+                    </span>
                   </div>
 
                   <Button 
@@ -204,11 +271,12 @@ const ImageGenerator = () => {
                 ) : (
                   <div className="space-y-4">
                     {generatedImages.map((imageUrl, index) => (
-                      <div key={index} className="relative group">
+                      <div key={`${imageUrl}-${index}`} className="relative group">
                         <img
                           src={imageUrl}
                           alt={`Generated image ${index + 1}`}
                           className="w-full rounded-lg border border-border"
+                          loading="lazy"
                         />
                         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Button

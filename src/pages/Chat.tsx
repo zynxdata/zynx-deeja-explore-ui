@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -5,6 +6,9 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Send, Bot, User, Settings, Trash2, Download } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useInputValidation, textSchema, rateLimiter } from "@/components/security/InputValidator";
+import { useSecureStorage } from "@/hooks/useSecureStorage";
 
 interface Message {
   id: string;
@@ -14,38 +18,67 @@ interface Message {
 }
 
 const Chat = () => {
+  const { user } = useAuth();
+  const { validateInput, sanitizeInput } = useInputValidation();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [apiKey, setApiKey] = useState("");
   const [showSettings, setShowSettings] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Use secure storage for API key
+  const { 
+    value: apiKey, 
+    setValue: setApiKey, 
+    loading: storageLoading 
+  } = useSecureStorage("openai-api-key", "", { 
+    encrypt: true, 
+    expiry: 7 * 24 * 60 * 60 * 1000 // 7 days
+  });
+
+  // Load messages from localStorage on mount
   useEffect(() => {
-    // Load messages and API key from localStorage
-    const savedMessages = localStorage.getItem("ai-chat-messages");
-    const savedApiKey = localStorage.getItem("openai-api-key");
-    
+    const savedMessages = localStorage.getItem(`ai-chat-messages-${user?.id}`);
     if (savedMessages) {
-      setMessages(JSON.parse(savedMessages));
+      try {
+        const parsed = JSON.parse(savedMessages);
+        setMessages(parsed.map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        })));
+      } catch (error) {
+        console.error('Error loading messages:', error);
+      }
     }
-    if (savedApiKey) {
-      setApiKey(savedApiKey);
+  }, [user?.id]);
+
+  // Save messages to localStorage
+  useEffect(() => {
+    if (user?.id && messages.length > 0) {
+      localStorage.setItem(`ai-chat-messages-${user.id}`, JSON.stringify(messages));
     }
-  }, []);
+  }, [messages, user?.id]);
 
+  // Auto scroll to bottom
   useEffect(() => {
-    // Save messages to localStorage
-    localStorage.setItem("ai-chat-messages", JSON.stringify(messages));
-  }, [messages]);
-
-  useEffect(() => {
-    // Auto scroll to bottom
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSendMessage = async () => {
     if (!input.trim()) return;
+    
+    // Validate input
+    const { isValid, error } = validateInput(textSchema, input);
+    if (!isValid) {
+      toast.error(error || 'ข้อมูลไม่ถูกต้อง');
+      return;
+    }
+
+    // Check rate limiting (max 10 requests per minute)
+    if (!rateLimiter.checkRate(user?.id || 'anonymous', 10, 60000)) {
+      toast.error('คุณส่งข้อความเร็วเกินไป กรุณารอสักครู่');
+      return;
+    }
     
     if (!apiKey) {
       toast.error("กรุณาใส่ OpenAI API Key ในการตั้งค่า");
@@ -53,10 +86,11 @@ const Chat = () => {
       return;
     }
 
+    const sanitizedInput = sanitizeInput(input);
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
-      content: input.trim(),
+      content: sanitizedInput,
       timestamp: new Date(),
     };
 
@@ -76,10 +110,10 @@ const Chat = () => {
           messages: [
             {
               role: "system",
-              content: "You are Deeja, a helpful AI assistant that specializes in Thai culture and AGI technology. Always respond in Thai language."
+              content: "You are Deeja, a helpful AI assistant that specializes in Thai culture and AGI technology. Always respond in Thai language. Be helpful and respectful."
             },
-            ...messages.map(m => ({ role: m.role, content: m.content })),
-            { role: "user", content: userMessage.content }
+            ...messages.slice(-10).map(m => ({ role: m.role, content: m.content })), // Limit context
+            { role: "user", content: sanitizedInput }
           ],
           max_tokens: 1000,
           temperature: 0.7,
@@ -87,54 +121,93 @@ const Chat = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to get AI response");
+        if (response.status === 401) {
+          throw new Error("API Key ไม่ถูกต้อง");
+        } else if (response.status === 429) {
+          throw new Error("มีการใช้งานเกินขีดจำกัด กรุณาลองใหม่ภายหลัง");
+        } else {
+          throw new Error("เกิดข้อผิดพลาดในการติดต่อ AI");
+        }
       }
 
       const data = await response.json();
+      
+      if (!data.choices?.[0]?.message?.content) {
+        throw new Error("ไม่ได้รับการตอบกลับจาก AI");
+      }
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: data.choices[0].message.content,
+        content: sanitizeInput(data.choices[0].message.content),
         timestamp: new Date(),
       };
 
       setMessages(prev => [...prev, assistantMessage]);
       toast.success("ได้รับการตอบกลับจาก AI แล้ว");
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("เกิดข้อผิดพลาดในการติดต่อ AI");
+    } catch (error: any) {
+      console.error("Chat error:", error);
+      toast.error(error.message || "เกิดข้อผิดพลาดในการติดต่อ AI");
     } finally {
       setIsLoading(false);
     }
   };
 
   const saveApiKey = () => {
+    const { isValid, error } = validateInput(textSchema, apiKey);
+    if (!isValid) {
+      toast.error(error || 'API Key ไม่ถูกต้อง');
+      return;
+    }
+    
     if (!apiKey.trim()) {
       toast.error("กรุณาใส่ API Key");
       return;
     }
-    localStorage.setItem("openai-api-key", apiKey);
+    
     setShowSettings(false);
     toast.success("บันทึก API Key แล้ว");
   };
 
   const clearChat = () => {
     setMessages([]);
-    localStorage.removeItem("ai-chat-messages");
+    if (user?.id) {
+      localStorage.removeItem(`ai-chat-messages-${user.id}`);
+    }
     toast.success("ล้างประวัติการสนทนาแล้ว");
   };
 
   const exportChat = () => {
-    const chatData = JSON.stringify(messages, null, 2);
-    const blob = new Blob([chatData], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `chat-history-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success("ส่งออกประวัติการสนทนาแล้ว");
+    if (messages.length === 0) {
+      toast.error("ไม่มีประวัติการสนทนาให้ส่งออก");
+      return;
+    }
+
+    try {
+      const chatData = JSON.stringify(messages, null, 2);
+      const blob = new Blob([chatData], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `chat-history-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("ส่งออกประวัติการสนทนาแล้ว");
+    } catch (error) {
+      toast.error("เกิดข้อผิดพลาดในการส่งออกข้อมูล");
+    }
   };
+
+  if (storageLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center">
+        <Card className="p-8 text-center">
+          <Bot className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
+          <p className="text-muted-foreground">กำลังโหลด...</p>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
@@ -177,7 +250,7 @@ const Chat = () => {
                 <Button onClick={saveApiKey}>บันทึก</Button>
               </div>
               <p className="text-sm text-muted-foreground mt-2">
-                API Key จะถูกเก็บใน localStorage ของเบราว์เซอร์ของคุณเท่านั้น
+                API Key จะถูกเข้ารหัสและเก็บในเบราว์เซอร์ของคุณอย่างปลอดภัย
               </p>
             </Card>
           )}
@@ -248,6 +321,7 @@ const Chat = () => {
                   onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
                   disabled={isLoading}
                   className="flex-1"
+                  maxLength={1000}
                 />
                 <Button 
                   onClick={handleSendMessage} 
