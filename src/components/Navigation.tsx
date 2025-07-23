@@ -1,132 +1,171 @@
 
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Home, MessageSquare, Image, Mic, Settings, Brain, LogOut, LogIn } from "lucide-react";
+import { Menu, X, Brain, MessageCircle, Image, BookOpen, LogOut, LogIn } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { toast } from "sonner";
 
 const Navigation = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const { user, signOut } = useAuth();
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast.success('ออกจากระบบสำเร็จ');
-    } catch (error) {
-      toast.error('เกิดข้อผิดพลาดในการออกจากระบบ');
-    }
-  };
+  const isActive = (path: string) => location.pathname === path;
 
   const navItems = [
-    { path: "/", label: "หน้าแรก", icon: Home, requireAuth: false },
-    { path: "/chat", label: "AI Chat", icon: MessageSquare, requireAuth: true },
-    { path: "/image-generator", label: "สร้างรูปภาพ", icon: Image, requireAuth: true },
-    { path: "/voice-chat", label: "Voice AI", icon: Mic, requireAuth: true },
-    { path: "/settings", label: "ตั้งค่า", icon: Settings, requireAuth: true },
+    { path: "/", label: "หน้าหลัก", icon: Brain },
+    { path: "/research", label: "วิจัย AGI", icon: BookOpen },
+    { path: "/chat", label: "AI Chat", icon: MessageCircle, protected: true },
+    { path: "/image-generator", label: "สร้างรูปภาพ", icon: Image, protected: true },
   ];
 
-  // Filter nav items based on authentication status
-  const visibleNavItems = navItems.filter(item => !item.requireAuth || user);
-
   return (
-    <nav className="bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center space-x-2 font-bold text-xl">
             <Brain className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold text-foreground">Deeja AI</span>
+            <span className="bg-gradient-to-r from-primary to-agi-yellow bg-clip-text text-transparent">
+              Zynx AGI
+            </span>
           </Link>
 
-          {/* Navigation Menu */}
-          <div className="hidden md:flex items-center gap-1">
-            {visibleNavItems.map((item) => {
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = location.pathname === item.path;
+              const shouldShow = !item.protected || user;
+              
+              if (!shouldShow) return null;
               
               return (
-                <Button
+                <Link
                   key={item.path}
-                  variant={isActive ? "default" : "ghost"}
-                  size="sm"
-                  asChild
-                  className="gap-2"
+                  to={item.path}
+                  className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive(item.path)
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                  }`}
                 >
-                  <Link to={item.path}>
-                    <Icon className="h-4 w-4" />
-                    {item.label}
-                  </Link>
-                </Button>
+                  <Icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </Link>
               );
             })}
+          </div>
 
-            {/* Auth Button */}
+          {/* Auth Section */}
+          <div className="hidden md:flex items-center space-x-4">
             {user ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSignOut}
-                className="gap-2 ml-2"
-              >
-                <LogOut className="h-4 w-4" />
-                ออกจากระบบ
-              </Button>
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-muted-foreground">
+                  สวัสดี, {user.email}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={signOut}
+                  className="flex items-center space-x-1"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>ออกจากระบบ</span>
+                </Button>
+              </div>
             ) : (
               <Button
                 variant="default"
                 size="sm"
                 asChild
-                className="gap-2 ml-2"
+                className="flex items-center space-x-1"
               >
                 <Link to="/auth">
                   <LogIn className="h-4 w-4" />
-                  เข้าสู่ระบบ
+                  <span>เข้าสู่ระบบ</span>
                 </Link>
               </Button>
             )}
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile menu button */}
           <div className="md:hidden">
-            {user ? (
-              <Button variant="ghost" size="sm" onClick={handleSignOut}>
-                <LogOut className="h-4 w-4" />
-              </Button>
-            ) : (
-              <Button variant="default" size="sm" asChild>
-                <Link to="/auth">
-                  <LogIn className="h-4 w-4" />
-                </Link>
-              </Button>
-            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsOpen(!isOpen)}
+              className="inline-flex items-center justify-center p-2"
+            >
+              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
           </div>
         </div>
 
         {/* Mobile Navigation */}
-        <div className="md:hidden pb-4">
-          <div className="grid grid-cols-2 gap-2">
-            {visibleNavItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.path;
-              
-              return (
-                <Button
-                  key={item.path}
-                  variant={isActive ? "default" : "outline"}
-                  size="sm"
-                  asChild
-                  className="gap-2 justify-start"
-                >
-                  <Link to={item.path}>
-                    <Icon className="h-4 w-4" />
-                    {item.label}
+        {isOpen && (
+          <div className="md:hidden">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const shouldShow = !item.protected || user;
+                
+                if (!shouldShow) return null;
+                
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium ${
+                      isActive(item.path)
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                    }`}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span>{item.label}</span>
                   </Link>
-                </Button>
-              );
-            })}
+                );
+              })}
+              
+              {/* Mobile Auth */}
+              <div className="pt-4 border-t border-border">
+                {user ? (
+                  <div className="space-y-2">
+                    <div className="px-3 py-2 text-sm text-muted-foreground">
+                      สวัสดี, {user.email}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        signOut();
+                        setIsOpen(false);
+                      }}
+                      className="w-full justify-start space-x-2"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>ออกจากระบบ</span>
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    asChild
+                    className="w-full justify-start space-x-2"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Link to="/auth">
+                      <LogIn className="h-4 w-4" />
+                      <span>เข้าสู่ระบบ</span>
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </nav>
   );

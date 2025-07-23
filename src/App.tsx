@@ -11,6 +11,7 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Chat from "./pages/Chat";
 import ImageGenerator from "./pages/ImageGenerator";
+import Research from "./pages/Research";
 import AuthPage from "./components/auth/AuthPage";
 import NotFound from "./pages/NotFound";
 
@@ -41,6 +42,7 @@ const App = () => (
             <Routes>
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/" element={<Index />} />
+              <Route path="/research" element={<Research />} />
               <Route 
                 path="/chat" 
                 element={
