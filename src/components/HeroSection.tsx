@@ -31,13 +31,17 @@ const HeroSection = () => {
 
             {/* Interactive Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
-              <Button variant="hero" size="lg" className="group">
-                <Sparkles className="mr-2 h-5 w-5 group-hover:animate-spin" />
-                Meet Deeja
+              <Button variant="hero" size="lg" className="group" asChild>
+                <a href="/chat">
+                  <Sparkles className="mr-2 h-5 w-5 group-hover:animate-spin" />
+                  เริ่มต้น AI Chat
+                </a>
               </Button>
-              <Button variant="explore" size="lg" className="group">
-                <Brain className="mr-2 h-5 w-5 group-hover:animate-pulse" />
-                Explore AGI
+              <Button variant="explore" size="lg" className="group" asChild>
+                <a href="/image-generator">
+                  <Brain className="mr-2 h-5 w-5 group-hover:animate-pulse" />
+                  สร้างรูปภาพ AI
+                </a>
               </Button>
             </div>
 
