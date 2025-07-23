@@ -4,17 +4,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Send, Bot, User, Settings, Trash2, Download } from "lucide-react";
+import { Send, Bot, User, Settings, Trash2, Download, Brain } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useInputValidation, textSchema, rateLimiter } from "@/components/security/InputValidator";
 import { useSecureStorage } from "@/hooks/useSecureStorage";
+import { ContextRouter } from "@/components/chat/ContextRouter";
+import ContextIndicator from "@/components/chat/ContextIndicator";
 
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  context?: {
+    language: string;
+    emotion: string;
+    strategy: string;
+    confidence: number;
+  };
 }
 
 const Chat = () => {
@@ -24,6 +32,7 @@ const Chat = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showContext, setShowContext] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Use secure storage for API key
@@ -87,6 +96,11 @@ const Chat = () => {
     }
 
     const sanitizedInput = sanitizeInput(input);
+    
+    // 🧠 Context Analysis using Zynx Router
+    const chatContext = ContextRouter.analyze(sanitizedInput, user?.id || 'anonymous');
+    const routingDecision = ContextRouter.route(chatContext);
+
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
@@ -110,13 +124,13 @@ const Chat = () => {
           messages: [
             {
               role: "system",
-              content: "You are Deeja, a helpful AI assistant that specializes in Thai culture and AGI technology. Always respond in Thai language. Be helpful and respectful."
+              content: routingDecision.systemPrompt
             },
             ...messages.slice(-10).map(m => ({ role: m.role, content: m.content })), // Limit context
             { role: "user", content: sanitizedInput }
           ],
-          max_tokens: 1000,
-          temperature: 0.7,
+          max_tokens: routingDecision.maxTokens,
+          temperature: routingDecision.temperature,
         }),
       });
 
@@ -136,15 +150,21 @@ const Chat = () => {
         throw new Error("ไม่ได้รับการตอบกลับจาก AI");
       }
 
+      const contextualResponse = ContextRouter.formatContextualResponse(
+        routingDecision, 
+        data.choices[0].message.content
+      );
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: sanitizeInput(data.choices[0].message.content),
+        content: sanitizeInput(contextualResponse.response),
         timestamp: new Date(),
+        context: contextualResponse.metadata
       };
 
       setMessages(prev => [...prev, assistantMessage]);
-      toast.success("ได้รับการตอบกลับจาก AI แล้ว");
+      toast.success(`ตอบกลับด้วย ${contextualResponse.metadata.strategy} strategy`);
     } catch (error: any) {
       console.error("Chat error:", error);
       toast.error(error.message || "เกิดข้อผิดพลาดในการติดต่อ AI");
@@ -209,6 +229,9 @@ const Chat = () => {
     );
   }
 
+  // Get current context for display
+  const currentContext = input ? ContextRouter.analyze(input) : null;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
       <div className="container mx-auto px-4 py-8">
@@ -219,10 +242,18 @@ const Chat = () => {
               <Bot className="h-8 w-8 text-primary" />
               <div>
                 <h1 className="text-3xl font-bold text-foreground">Deeja AI Chat</h1>
-                <p className="text-muted-foreground">สนทนากับ AI Assistant ที่เข้าใจวัฒนธรรมไทย</p>
+                <p className="text-muted-foreground">Context-aware Thai-English AI Assistant</p>
               </div>
             </div>
             <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setShowContext(!showContext)}
+                className={showContext ? "bg-primary/10" : ""}
+              >
+                <Brain className="h-4 w-4" />
+              </Button>
               <Button variant="outline" size="sm" onClick={() => setShowSettings(!showSettings)}>
                 <Settings className="h-4 w-4" />
               </Button>
@@ -255,6 +286,16 @@ const Chat = () => {
             </Card>
           )}
 
+          {/* Current Input Context */}
+          {currentContext && showContext && (
+            <ContextIndicator
+              language={currentContext.language.detected}
+              emotion={currentContext.emotion.emotion}
+              confidence={Math.min(currentContext.language.confidence, currentContext.emotion.confidence)}
+              isVisible={true}
+            />
+          )}
+
           {/* Chat Messages */}
           <Card className="h-[500px] overflow-hidden flex flex-col border-primary/20">
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -262,7 +303,7 @@ const Chat = () => {
                 <div className="text-center text-muted-foreground py-12">
                   <Bot className="h-12 w-12 mx-auto mb-4 text-primary/50" />
                   <p>เริ่มสนทนากับ Deeja AI ได้เลย!</p>
-                  <p className="text-sm">ถามอะไรเกี่ยวกับวัฒนธรรมไทยหรือเทคโนโลยี AGI ได้นะ</p>
+                  <p className="text-sm">ระบบจะวิเคราะห์ภาษาและอารมณ์เพื่อตอบสนองที่เหมาะสม</p>
                 </div>
               ) : (
                 messages.map((message) => (
@@ -280,15 +321,31 @@ const Chat = () => {
                           <Bot className="h-4 w-4 text-secondary-foreground" />
                         )}
                       </div>
-                      <div className={`rounded-lg p-3 ${
-                        message.role === "user" 
-                          ? "bg-primary text-primary-foreground" 
-                          : "bg-secondary text-secondary-foreground"
-                      }`}>
-                        <p className="whitespace-pre-wrap">{message.content}</p>
-                        <p className="text-xs opacity-70 mt-1">
-                          {message.timestamp.toLocaleTimeString("th-TH")}
-                        </p>
+                      <div className="flex flex-col gap-1">
+                        <div className={`rounded-lg p-3 ${
+                          message.role === "user" 
+                            ? "bg-primary text-primary-foreground" 
+                            : "bg-secondary text-secondary-foreground"
+                        }`}>
+                          <p className="whitespace-pre-wrap">{message.content}</p>
+                          <p className="text-xs opacity-70 mt-1">
+                            {message.timestamp.toLocaleTimeString("th-TH")}
+                          </p>
+                        </div>
+                        {/* Context metadata for AI responses */}
+                        {message.role === "assistant" && message.context && showContext && (
+                          <div className="flex gap-1 flex-wrap">
+                            <Badge variant="outline" className="text-xs">
+                              {message.context.language}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {message.context.emotion}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {message.context.strategy}
+                            </Badge>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -315,7 +372,7 @@ const Chat = () => {
             <div className="border-t border-border p-4">
               <div className="flex gap-2">
                 <Input
-                  placeholder="พิมพ์ข้อความของคุณ..."
+                  placeholder="พิมพ์ข้อความของคุณ... / Type your message..."
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
@@ -334,6 +391,9 @@ const Chat = () => {
               <div className="flex items-center gap-2 mt-2">
                 <Badge variant={apiKey ? "default" : "destructive"} className="text-xs">
                   {apiKey ? "API Key ตั้งค่าแล้ว" : "ยังไม่ได้ตั้งค่า API Key"}
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  Context Analysis: {showContext ? "ON" : "OFF"}
                 </Badge>
                 <span className="text-xs text-muted-foreground">
                   {messages.length} ข้อความ
