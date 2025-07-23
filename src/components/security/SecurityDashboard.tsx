@@ -20,9 +20,10 @@ interface SecurityLog {
   id: string;
   event_type: string;
   severity: string;
-  details: Record<string, any>;
-  ip_address?: string;
-  user_agent?: string;
+  details: any; // Changed from Record<string, any> to any to match Supabase Json type
+  ip_address?: string | null;
+  user_agent?: string | null;
+  user_id?: string | null;
   created_at: string;
 }
 
@@ -57,7 +58,8 @@ const SecurityDashboard = () => {
       if (logsError) {
         console.error('Error fetching security logs:', logsError);
       } else {
-        setRecentLogs(logs || []);
+        // Cast the data to our SecurityLog type
+        setRecentLogs((logs || []) as SecurityLog[]);
       }
     } catch (error) {
       console.error('Security dashboard error:', error);
@@ -279,7 +281,7 @@ const SecurityDashboard = () => {
                         </span>
                       </div>
                       
-                      {log.details && Object.keys(log.details).length > 0 && (
+                      {log.details && typeof log.details === 'object' && Object.keys(log.details).length > 0 && (
                         <div className="text-sm">
                           <p className="text-muted-foreground mb-1">รายละเอียด:</p>
                           <div className="bg-muted p-2 rounded text-xs font-mono">
