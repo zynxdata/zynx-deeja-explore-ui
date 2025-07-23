@@ -1,10 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Brain, Sparkles, Zap } from "lucide-react";
-
 const HeroSection = () => {
-  return (
-    <section className="min-h-screen bg-hero-gradient flex items-center justify-center relative overflow-hidden">
+  return <section className="min-h-screen bg-hero-gradient flex items-center justify-center relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-20 w-32 h-32 bg-agi-yellow/20 rounded-full animate-float"></div>
@@ -73,7 +71,7 @@ const HeroSection = () => {
               {/* Placeholder for character - could be replaced with actual Deeja character */}
               <div className="w-80 h-80 bg-gradient-to-br from-agi-yellow/20 to-agi-orange/20 rounded-full flex items-center justify-center backdrop-blur-sm border-2 border-white/30 animate-float">
                 <div className="text-center">
-                  <Brain className="h-20 w-20 text-white mx-auto mb-4 animate-pulse" />
+                  <Brain className="h-20 w-20 text-white mb-4 animate-pulse mx-[256px] px-0 my-[198px]" />
                   <p className="text-white font-semibold text-lg">Deeja Character</p>
                   <p className="text-white/70">Cultural AGI Assistant</p>
                 </div>
@@ -90,8 +88,6 @@ const HeroSection = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default HeroSection;
