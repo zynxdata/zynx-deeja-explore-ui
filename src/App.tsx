@@ -7,7 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./components/auth/AuthProvider";
 import SecureErrorBoundary from "./components/security/SecureErrorBoundary";
 import SecurityHeaders from "./components/security/SecurityHeaders";
-import Navigation from "./components/Navigation";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "./components/AppSidebar";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Chat from "./pages/Chat";
@@ -41,30 +42,43 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Navigation />
-            <Routes>
-              <Route path="/auth" element={<AuthPage />} />
-              <Route path="/admin-setup" element={<AdminSetup />} />
-              <Route path="/" element={<Index />} />
-              <Route path="/research" element={<Research />} />
-              <Route 
-                path="/chat" 
-                element={
-                  <ProtectedRoute>
-                    <Chat />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/image-generator" 
-                element={
-                  <ProtectedRoute>
-                    <ImageGenerator />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <SidebarProvider>
+              <div className="min-h-screen flex w-full">
+                <AppSidebar />
+                <SidebarInset>
+                  <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+                    <SidebarTrigger className="-ml-1" />
+                    <div className="h-4 w-px bg-border mx-2" />
+                    <h1 className="text-lg font-semibold">Zynx CaaS Platform</h1>
+                  </header>
+                  <main className="flex-1 p-6">
+                    <Routes>
+                      <Route path="/auth" element={<AuthPage />} />
+                      <Route path="/admin-setup" element={<AdminSetup />} />
+                      <Route path="/" element={<Index />} />
+                      <Route path="/research" element={<Research />} />
+                      <Route 
+                        path="/chat" 
+                        element={
+                          <ProtectedRoute>
+                            <Chat />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      <Route 
+                        path="/image-generator" 
+                        element={
+                          <ProtectedRoute>
+                            <ImageGenerator />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </main>
+                </SidebarInset>
+              </div>
+            </SidebarProvider>
           </BrowserRouter>
         </AuthProvider>
       </TooltipProvider>
