@@ -23,39 +23,48 @@ class SecureErrorBoundary extends Component<Props, State> {
     // Generate a random error ID for tracking without exposing sensitive info
     const errorId = Math.random().toString(36).substring(2, 15);
     
-    // Log error details securely (only in development)
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error caught by boundary:', error);
-    }
+    // Log error details securely (enhanced logging for debugging)
+    console.error('🚨 SecureErrorBoundary: Error caught by boundary:', {
+      errorId,
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
 
     return { hasError: true, errorId };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // In production, you would send this to your error tracking service
-    // with the errorId but without sensitive information
-    console.error('Uncaught error:', {
+    // Enhanced error logging for debugging
+    console.error('🚨 SecureErrorBoundary: Component error details:', {
       errorId: this.state.errorId,
-      message: 'Application error occurred',
-      // Don't log the actual error details in production
-      ...(process.env.NODE_ENV === 'development' && {
-        error: error.message,
+      error: {
+        message: error.message,
         stack: error.stack,
-        componentStack: errorInfo.componentStack,
-      }),
+        name: error.name
+      },
+      errorInfo: {
+        componentStack: errorInfo.componentStack
+      },
+      environment: process.env.NODE_ENV,
+      timestamp: new Date().toISOString()
     });
   }
 
   private handleReload = () => {
+    console.log('🔧 SecureErrorBoundary: Reloading page...');
     window.location.reload();
   };
 
   private handleGoHome = () => {
+    console.log('🔧 SecureErrorBoundary: Navigating to home...');
     window.location.href = '/';
   };
 
   public render() {
     if (this.state.hasError) {
+      console.log('🚨 SecureErrorBoundary: Rendering error UI for errorId:', this.state.errorId);
+      
       return (
         <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center p-4">
           <Card className="w-full max-w-md border-destructive/20">

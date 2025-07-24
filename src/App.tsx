@@ -17,73 +17,162 @@ import Research from "./pages/Research";
 import AuthPage from "./components/auth/AuthPage";
 import AdminSetup from "./pages/AdminSetup";
 import NotFound from "./pages/NotFound";
+import Security from "./pages/Security";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
+// Enhanced QueryClient with better error handling and logging
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: (failureCount, error: any) => {
+        console.log('🔧 QueryClient: Query retry attempt', { failureCount, error: error?.message });
         // Don't retry on authentication errors
         if (error?.status === 401 || error?.status === 403) {
+          console.log('🚨 QueryClient: Auth error, not retrying');
           return false;
         }
         return failureCount < 3;
       },
       staleTime: 5 * 60 * 1000, // 5 minutes
+      onError: (error: any) => {
+        console.error('🚨 QueryClient: Query error:', error);
+      }
     },
+    mutations: {
+      onError: (error: any) => {
+        console.error('🚨 QueryClient: Mutation error:', error);
+      }
+    }
   },
 });
 
-const App = () => (
-  <SecureErrorBoundary>
-    <SecurityHeaders />
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <SidebarProvider>
-              <div className="min-h-screen flex w-full">
-                <AppSidebar />
-                <SidebarInset>
-                  <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-                    <SidebarTrigger className="-ml-1" />
-                    <div className="h-4 w-px bg-border mx-2" />
-                    <h1 className="text-lg font-semibold">Zynx CaaS Platform</h1>
-                  </header>
-                  <main className="flex-1 p-6">
-                    <Routes>
-                      <Route path="/auth" element={<AuthPage />} />
-                      <Route path="/admin-setup" element={<AdminSetup />} />
-                      <Route path="/" element={<Index />} />
-                      <Route path="/research" element={<Research />} />
-                      <Route 
-                        path="/chat" 
-                        element={
-                          <ProtectedRoute>
-                            <Chat />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      <Route 
-                        path="/image-generator" 
-                        element={
-                          <ProtectedRoute>
-                            <ImageGenerator />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </main>
-                </SidebarInset>
-              </div>
-            </SidebarProvider>
-          </BrowserRouter>
-        </AuthProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </SecureErrorBoundary>
-);
+// Connection test component
+const ConnectionTest = () => {
+  useEffect(() => {
+    const testConnections = async () => {
+      console.log('🔧 ConnectionTest: Starting connectivity tests...');
+      
+      // Test Supabase connection
+      try {
+        const { data, error } = await supabase.from('profiles').select('count').limit(1);
+        if (error) {
+          console.error('🚨 ConnectionTest: Supabase connection error:', error);
+        } else {
+          console.log('✅ ConnectionTest: Supabase connection successful');
+        }
+      } catch (error) {
+        console.error('🚨 ConnectionTest: Supabase connection exception:', error);
+      }
+
+      // Test rate limiter function
+      try {
+        const { data, error } = await supabase.functions.invoke('rate-limiter', {
+          body: {
+            identifier: 'connection-test',
+            action: 'test',
+            maxRequests: 10,
+            timeWindow: 60000
+          }
+        });
+        if (error) {
+          console.error('🚨 ConnectionTest: Rate limiter function error:', error);
+        } else {
+          console.log('✅ ConnectionTest: Rate limiter function working');
+        }
+      } catch (error) {
+        console.error('🚨 ConnectionTest: Rate limiter function exception:', error);
+      }
+
+      // Test security monitor function
+      try {
+        const { data, error } = await supabase.functions.invoke('security-monitor', {
+          body: {
+            event_type: 'api_abuse',
+            severity: 'low',
+            details: { test: 'connection-test' }
+          }
+        });
+        if (error) {
+          console.error('🚨 ConnectionTest: Security monitor function error:', error);
+        } else {
+          console.log('✅ ConnectionTest: Security monitor function working');
+        }
+      } catch (error) {
+        console.error('🚨 ConnectionTest: Security monitor function exception:', error);
+      }
+    };
+
+    testConnections();
+  }, []);
+
+  return null;
+};
+
+const App = () => {
+  console.log('🔧 App: Initializing application...');
+  
+  return (
+    <SecureErrorBoundary>
+      <SecurityHeaders />
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <AuthProvider>
+            <ConnectionTest />
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <SidebarProvider>
+                <div className="min-h-screen flex w-full">
+                  <AppSidebar />
+                  <SidebarInset>
+                    <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+                      <SidebarTrigger className="-ml-1" />
+                      <div className="h-4 w-px bg-border mx-2" />
+                      <h1 className="text-lg font-semibold">Zynx CaaS Platform</h1>
+                    </header>
+                    <main className="flex-1 p-6">
+                      <Routes>
+                        <Route path="/auth" element={<AuthPage />} />
+                        <Route path="/admin-setup" element={<AdminSetup />} />
+                        <Route path="/" element={<Index />} />
+                        <Route path="/research" element={<Research />} />
+                        <Route 
+                          path="/chat" 
+                          element={
+                            <ProtectedRoute>
+                              <Chat />
+                            </ProtectedRoute>
+                          } 
+                        />
+                        <Route 
+                          path="/image-generator" 
+                          element={
+                            <ProtectedRoute>
+                              <ImageGenerator />
+                            </ProtectedRoute>
+                          } 
+                        />
+                        <Route 
+                          path="/security" 
+                          element={
+                            <ProtectedRoute>
+                              <Security />
+                            </ProtectedRoute>
+                          } 
+                        />
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </main>
+                  </SidebarInset>
+                </div>
+              </SidebarProvider>
+            </BrowserRouter>
+          </AuthProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </SecureErrorBoundary>
+  );
+};
 
 export default App;
