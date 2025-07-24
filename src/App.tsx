@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,6 +18,7 @@ import AuthPage from "./components/auth/AuthPage";
 import AdminSetup from "./pages/AdminSetup";
 import NotFound from "./pages/NotFound";
 import Security from "./pages/Security";
+import AdminDashboard from "./pages/AdminDashboard";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 
@@ -152,6 +154,14 @@ const App = () => {
                           element={
                             <ProtectedRoute>
                               <Security />
+                            </ProtectedRoute>
+                          } 
+                        />
+                        <Route 
+                          path="/admin" 
+                          element={
+                            <ProtectedRoute>
+                              <AdminDashboard />
                             </ProtectedRoute>
                           } 
                         />
