@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Brain, MessageCircle, Image, BookOpen, LogOut, LogIn, User, Settings, Shield } from "lucide-react";
+import { Brain, MessageCircle, Image, BookOpen, LogOut, LogIn, User, Settings } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import {
   Sidebar,
@@ -36,7 +36,6 @@ export function AppSidebar() {
 
   const adminNavItems = [
     { path: "/admin", label: "Admin Dashboard", icon: Settings },
-    { path: "/security", label: "Security", icon: Shield },
   ];
 
   return (
