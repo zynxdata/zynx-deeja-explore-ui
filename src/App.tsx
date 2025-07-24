@@ -25,7 +25,10 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: (failureCount, error: any) => {
-        console.log('🔧 QueryClient: Query retry attempt', { failureCount, error: error?.message });
+        console.log('🔧 QueryClient: Query retry attempt', {
+          failureCount,
+          error: error?.message
+        });
         // Don't retry on authentication errors
         if (error?.status === 401 || error?.status === 403) {
           console.log('🚨 QueryClient: Auth error, not retrying');
@@ -33,12 +36,12 @@ const queryClient = new QueryClient({
         }
         return failureCount < 3;
       },
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000 // 5 minutes
     },
     mutations: {
       // Remove onError from mutations as well
     }
-  },
+  }
 });
 
 // Connection test component
@@ -46,10 +49,13 @@ const ConnectionTest = () => {
   useEffect(() => {
     const testConnections = async () => {
       console.log('🔧 ConnectionTest: Starting connectivity tests...');
-      
+
       // Test Supabase connection
       try {
-        const { data, error } = await supabase.from('profiles').select('count').limit(1);
+        const {
+          data,
+          error
+        } = await supabase.from('profiles').select('count').limit(1);
         if (error) {
           console.error('🚨 ConnectionTest: Supabase connection error:', error);
         } else {
@@ -61,7 +67,10 @@ const ConnectionTest = () => {
 
       // Test rate limiter function
       try {
-        const { data, error } = await supabase.functions.invoke('rate-limiter', {
+        const {
+          data,
+          error
+        } = await supabase.functions.invoke('rate-limiter', {
           body: {
             identifier: 'connection-test',
             action: 'test',
@@ -80,11 +89,16 @@ const ConnectionTest = () => {
 
       // Test security monitor function
       try {
-        const { data, error } = await supabase.functions.invoke('security-monitor', {
+        const {
+          data,
+          error
+        } = await supabase.functions.invoke('security-monitor', {
           body: {
             event_type: 'api_abuse',
             severity: 'low',
-            details: { test: 'connection-test' }
+            details: {
+              test: 'connection-test'
+            }
           }
         });
         if (error) {
@@ -96,18 +110,13 @@ const ConnectionTest = () => {
         console.error('🚨 ConnectionTest: Security monitor function exception:', error);
       }
     };
-
     testConnections();
   }, []);
-
   return null;
 };
-
 const App = () => {
   console.log('🔧 App: Initializing application...');
-  
-  return (
-    <SecureErrorBoundary>
+  return <SecureErrorBoundary>
       <SecurityHeaders />
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
@@ -121,9 +130,9 @@ const App = () => {
                   <AppSidebar />
                   <SidebarInset>
                     <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-                      <SidebarTrigger className="-ml-1" />
+                      <SidebarTrigger className="-ml-1 text-base" />
                       <div className="h-4 w-px bg-border mx-2" />
-                      <h1 className="text-lg font-semibold">Zynx CaaS Platform</h1>
+                      
                     </header>
                     <main className="flex-1 p-6">
                       <Routes>
@@ -131,30 +140,15 @@ const App = () => {
                         <Route path="/admin-setup" element={<AdminSetup />} />
                         <Route path="/" element={<Index />} />
                         <Route path="/research" element={<Research />} />
-                        <Route 
-                          path="/chat" 
-                          element={
-                            <ProtectedRoute>
+                        <Route path="/chat" element={<ProtectedRoute>
                               <Chat />
-                            </ProtectedRoute>
-                          } 
-                        />
-                        <Route 
-                          path="/image-generator" 
-                          element={
-                            <ProtectedRoute>
+                            </ProtectedRoute>} />
+                        <Route path="/image-generator" element={<ProtectedRoute>
                               <ImageGenerator />
-                            </ProtectedRoute>
-                          } 
-                        />
-                        <Route 
-                          path="/admin" 
-                          element={
-                            <ProtectedRoute>
+                            </ProtectedRoute>} />
+                        <Route path="/admin" element={<ProtectedRoute>
                               <AdminDashboard />
-                            </ProtectedRoute>
-                          } 
-                        />
+                            </ProtectedRoute>} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </main>
@@ -165,8 +159,6 @@ const App = () => {
           </AuthProvider>
         </TooltipProvider>
       </QueryClientProvider>
-    </SecureErrorBoundary>
-  );
+    </SecureErrorBoundary>;
 };
-
 export default App;
