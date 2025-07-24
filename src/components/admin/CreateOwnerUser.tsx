@@ -1,107 +1,184 @@
 
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { toast } from 'sonner';
+import { Shield, User, Mail, Lock, CheckCircle } from 'lucide-react';
+
+const createOwnerSchema = z.object({
+  email: z.string().email('กรุณากรอกอีเมลให้ถูกต้อง'),
+  password: z.string().min(8, 'รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร'),
+  confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "รหัสผ่านไม่ตรงกัน",
+  path: ["confirmPassword"],
+});
+
+type CreateOwnerFormData = z.infer<typeof createOwnerSchema>;
 
 const CreateOwnerUser = () => {
+  const { signUp } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
-  const createOwnerUser = async () => {
+  const form = useForm<CreateOwnerFormData>({
+    resolver: zodResolver(createOwnerSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      confirmPassword: ''
+    }
+  });
+
+  const onSubmit = async (data: CreateOwnerFormData) => {
     setLoading(true);
-    setMessage('');
     setError('');
 
     try {
-      // Create the owner user with the specified credentials
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: 'zynx@zynxdata.com',
-        password: 'Zynx@12345!',
-        options: {
-          data: {
-            username: 'Z0000',
-            full_name: 'Zynx Owner',
-            role: 'owner'
-          }
-        }
-      });
-
-      if (signUpError) {
-        throw signUpError;
+      const { error } = await signUp(data.email, data.password);
+      
+      if (error) {
+        setError(`เกิดข้อผิดพลาด: ${error.message}`);
+      } else {
+        setSuccess(true);
+        toast.success('สร้างบัญชี Owner สำเร็จ');
+        form.reset();
       }
-
-      if (data.user) {
-        setMessage(`Owner user created successfully! 
-        Email: zynx@zynxdata.com
-        Username: Z0000
-        User ID: ${data.user.id}
-        
-        Please check email for verification link.`);
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to create owner user');
+    } catch (err) {
+      console.error('Create owner error:', err);
+      setError('เกิดข้อผิดพลาดที่ไม่คาดคิด');
     } finally {
       setLoading(false);
     }
   };
 
+  if (success) {
+    return (
+      <Card className="border-green-200 bg-green-50">
+        <CardContent className="pt-6">
+          <div className="text-center">
+            <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-green-800 mb-2">
+              สร้างบัญชี Owner สำเร็จ
+            </h3>
+            <p className="text-green-700">
+              กรุณาตรวจสอบอีเมลเพื่อยืนยันบัญชี
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card>
       <CardHeader>
-        <CardTitle>Create Owner User</CardTitle>
-        <CardDescription>
-          Generate the owner user account (Z0000)
-        </CardDescription>
+        <div className="flex items-center space-x-2">
+          <Shield className="h-6 w-6 text-primary" />
+          <CardTitle>สร้างบัญชี Owner</CardTitle>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label>Username</Label>
-          <Input value="Z0000" disabled />
-        </div>
-        
-        <div className="space-y-2">
-          <Label>Email</Label>
-          <Input value="zynx@zynxdata.com" disabled />
-        </div>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
 
-        <div className="space-y-2">
-          <Label>Default Password</Label>
-          <Input value="Zynx@12345!" type="password" disabled />
-        </div>
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>อีเมล</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        {...field}
+                        type="email"
+                        placeholder="admin@example.com"
+                        className="pl-10"
+                        disabled={loading}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        {message && (
-          <Alert>
-            <AlertDescription className="whitespace-pre-line">
-              {message}
-            </AlertDescription>
-          </Alert>
-        )}
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>รหัสผ่าน</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        {...field}
+                        type="password"
+                        placeholder="รหัสผ่าน"
+                        className="pl-10"
+                        disabled={loading}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ยืนยันรหัสผ่าน</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        {...field}
+                        type="password"
+                        placeholder="ยืนยันรหัสผ่าน"
+                        className="pl-10"
+                        disabled={loading}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <Button 
-          onClick={createOwnerUser} 
-          disabled={loading}
-          className="w-full"
-        >
-          {loading ? 'Creating...' : 'Create Owner User'}
-        </Button>
-
-        <div className="text-sm text-muted-foreground">
-          <p>Default credentials:</p>
-          <p>Email: zynx@zynxdata.com</p>
-          <p>Password: Zynx@12345!</p>
-          <p>Username: Z0000</p>
-        </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
+                  กำลังสร้างบัญชี...
+                </div>
+              ) : (
+                <>
+                  <User className="h-4 w-4 mr-2" />
+                  สร้างบัญชี Owner
+                </>
+              )}
+            </Button>
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );
