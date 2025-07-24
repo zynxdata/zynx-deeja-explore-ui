@@ -15,6 +15,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 
@@ -41,7 +42,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-border">
-        <div className="flex items-center space-x-2 px-2 py-3">
+        <div className="flex items-center justify-between px-2 py-3">
           <Link to="/" className="flex items-center space-x-2">
             <Brain className="h-8 w-8 text-primary flex-shrink-0" />
             {state === "expanded" && (
@@ -50,6 +51,7 @@ export function AppSidebar() {
               </span>
             )}
           </Link>
+          <SidebarTrigger className="h-8 w-8 p-1" />
         </div>
       </SidebarHeader>
 
