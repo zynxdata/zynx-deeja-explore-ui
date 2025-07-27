@@ -18,6 +18,7 @@ import AuthPage from "./components/auth/AuthPage";
 import AdminSetup from "./pages/AdminSetup";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
+import ComponentFlowchart from "./pages/ComponentFlowchart";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 
@@ -137,6 +138,7 @@ const App = () => {
                         <Route path="/admin-setup" element={<AdminSetup />} />
                         <Route path="/" element={<Index />} />
                         <Route path="/research" element={<Research />} />
+                        <Route path="/flowchart" element={<ComponentFlowchart />} />
                         <Route path="/chat" element={<ProtectedRoute>
                               <Chat />
                             </ProtectedRoute>} />
@@ -158,4 +160,5 @@ const App = () => {
       </QueryClientProvider>
     </SecureErrorBoundary>;
 };
+
 export default App;
