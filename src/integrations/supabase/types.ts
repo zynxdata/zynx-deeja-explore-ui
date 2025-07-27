@@ -14,6 +14,238 @@ export type Database = {
   }
   public: {
     Tables: {
+      category_performance: {
+        Row: {
+          accuracy_percentage: number | null
+          agi_similarity_score: number | null
+          category: string
+          correct_answers: number | null
+          id: string
+          last_updated: string
+          player_id: string
+          total_questions: number | null
+          total_score: number | null
+        }
+        Insert: {
+          accuracy_percentage?: number | null
+          agi_similarity_score?: number | null
+          category: string
+          correct_answers?: number | null
+          id?: string
+          last_updated?: string
+          player_id: string
+          total_questions?: number | null
+          total_score?: number | null
+        }
+        Update: {
+          accuracy_percentage?: number | null
+          agi_similarity_score?: number | null
+          category?: string
+          correct_answers?: number | null
+          id?: string
+          last_updated?: string
+          player_id?: string
+          total_questions?: number | null
+          total_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_performance_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "game_players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      championship_defeats: {
+        Row: {
+          defeat_agi_similarity: number
+          defeat_score: number
+          defeat_timestamp: string
+          defeated_champion_id: string
+          id: string
+          leaderboard_id: string
+          new_champion_id: string
+          reset_triggered: boolean | null
+        }
+        Insert: {
+          defeat_agi_similarity: number
+          defeat_score: number
+          defeat_timestamp?: string
+          defeated_champion_id: string
+          id?: string
+          leaderboard_id: string
+          new_champion_id: string
+          reset_triggered?: boolean | null
+        }
+        Update: {
+          defeat_agi_similarity?: number
+          defeat_score?: number
+          defeat_timestamp?: string
+          defeated_champion_id?: string
+          id?: string
+          leaderboard_id?: string
+          new_champion_id?: string
+          reset_triggered?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "championship_defeats_defeated_champion_id_fkey"
+            columns: ["defeated_champion_id"]
+            isOneToOne: false
+            referencedRelation: "game_players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "championship_defeats_leaderboard_id_fkey"
+            columns: ["leaderboard_id"]
+            isOneToOne: false
+            referencedRelation: "leaderboards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "championship_defeats_new_champion_id_fkey"
+            columns: ["new_champion_id"]
+            isOneToOne: false
+            referencedRelation: "game_players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_players: {
+        Row: {
+          ai_description: string | null
+          created_at: string
+          display_name: string
+          id: string
+          is_ai: boolean | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          ai_description?: string | null
+          created_at?: string
+          display_name: string
+          id?: string
+          is_ai?: boolean | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          ai_description?: string | null
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_ai?: boolean | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      game_sessions: {
+        Row: {
+          agi_similarity_score: number | null
+          best_streak: number | null
+          category_scores: Json | null
+          correct_answers: number | null
+          created_at: string
+          current_streak: number | null
+          id: string
+          player_id: string
+          session_end: string | null
+          session_start: string
+          status: Database["public"]["Enums"]["game_status"] | null
+          total_questions: number | null
+          total_score: number | null
+        }
+        Insert: {
+          agi_similarity_score?: number | null
+          best_streak?: number | null
+          category_scores?: Json | null
+          correct_answers?: number | null
+          created_at?: string
+          current_streak?: number | null
+          id?: string
+          player_id: string
+          session_end?: string | null
+          session_start?: string
+          status?: Database["public"]["Enums"]["game_status"] | null
+          total_questions?: number | null
+          total_score?: number | null
+        }
+        Update: {
+          agi_similarity_score?: number | null
+          best_streak?: number | null
+          category_scores?: Json | null
+          correct_answers?: number | null
+          created_at?: string
+          current_streak?: number | null
+          id?: string
+          player_id?: string
+          session_end?: string | null
+          session_start?: string
+          status?: Database["public"]["Enums"]["game_status"] | null
+          total_questions?: number | null
+          total_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_sessions_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "game_players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leaderboards: {
+        Row: {
+          champion_agi_similarity: number | null
+          champion_player_id: string | null
+          champion_score: number | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          period: Database["public"]["Enums"]["championship_period"]
+          period_end: string
+          period_start: string
+          total_participants: number | null
+        }
+        Insert: {
+          champion_agi_similarity?: number | null
+          champion_player_id?: string | null
+          champion_score?: number | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          period: Database["public"]["Enums"]["championship_period"]
+          period_end: string
+          period_start: string
+          total_participants?: number | null
+        }
+        Update: {
+          champion_agi_similarity?: number | null
+          champion_player_id?: string | null
+          champion_score?: number | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          period?: Database["public"]["Enums"]["championship_period"]
+          period_end?: string
+          period_start?: string
+          total_participants?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboards_champion_player_id_fkey"
+            columns: ["champion_player_id"]
+            isOneToOne: false
+            referencedRelation: "game_players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -149,6 +381,50 @@ export type Database = {
         }
         Relationships: []
       }
+      zone_champions: {
+        Row: {
+          champion_agi_similarity: number
+          champion_player_id: string
+          champion_score: number
+          championship_end: string | null
+          championship_start: string
+          id: string
+          is_active: boolean | null
+          zone_identifier: string
+          zone_type: string
+        }
+        Insert: {
+          champion_agi_similarity: number
+          champion_player_id: string
+          champion_score: number
+          championship_end?: string | null
+          championship_start?: string
+          id?: string
+          is_active?: boolean | null
+          zone_identifier: string
+          zone_type: string
+        }
+        Update: {
+          champion_agi_similarity?: number
+          champion_player_id?: string
+          champion_score?: number
+          championship_end?: string | null
+          championship_start?: string
+          id?: string
+          is_active?: boolean | null
+          zone_identifier?: string
+          zone_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zone_champions_champion_player_id_fkey"
+            columns: ["champion_player_id"]
+            isOneToOne: false
+            referencedRelation: "game_players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       zynx_agi_tasks: {
         Row: {
           Agent: string
@@ -190,6 +466,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_agi_similarity: {
+        Args: {
+          total_score: number
+          accuracy_percentage: number
+          streak_bonus: number
+          category_diversity: number
+        }
+        Returns: number
+      }
       cleanup_old_rate_limits: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -225,9 +510,23 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      should_enable_championship: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      trigger_championship_reset: {
+        Args: {
+          defeated_champion_id: string
+          new_champion_id: string
+          leaderboard_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "owner" | "admin" | "user"
+      championship_period: "monthly" | "seasonal" | "yearly"
+      game_status: "active" | "completed" | "champion_defeated"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -356,6 +655,8 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["owner", "admin", "user"],
+      championship_period: ["monthly", "seasonal", "yearly"],
+      game_status: ["active", "completed", "champion_defeated"],
     },
   },
 } as const
