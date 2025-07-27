@@ -43,6 +43,14 @@ const FlowNode: React.FC<FlowNodeProps> = memo(({ data, selected }) => {
     }
   };
 
+  const renderIcon = () => {
+    if (typeof IconComponent === 'string') {
+      // Handle string icons (fallback)
+      return <div className="h-4 w-4 bg-muted rounded" />;
+    }
+    return <IconComponent className="h-4 w-4" />;
+  };
+
   return (
     <div className="relative">
       {/* Input handle */}
@@ -59,7 +67,7 @@ const FlowNode: React.FC<FlowNodeProps> = memo(({ data, selected }) => {
       >
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
-            <IconComponent className="h-4 w-4" />
+            {renderIcon()}
             <CardTitle className="text-sm font-medium">{data.name}</CardTitle>
           </div>
           <div className="flex flex-wrap gap-1">

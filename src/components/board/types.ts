@@ -1,13 +1,14 @@
 
 import { LucideIcon } from 'lucide-react';
 import { Node, Edge } from '@xyflow/react';
+import { ElementType } from 'react';
 
 export interface ComponentNode {
   id: string;
   name: string;
   type: 'page' | 'component' | 'hook' | 'utility' | 'integration' | 'ui';
   category: string;
-  icon: LucideIcon;
+  icon: LucideIcon | ElementType;
   dependencies: string[];
   description: string;
   file: string;
@@ -20,7 +21,7 @@ export interface BoardNodeData extends Record<string, unknown> {
   name: string;
   type: string;
   category: string;
-  icon: LucideIcon;
+  icon: LucideIcon | ElementType;
   dependencies: string[];
   description: string;
   file: string;

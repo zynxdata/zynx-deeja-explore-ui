@@ -163,7 +163,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({ components }) => {
     setSelectedNodeId(null);
   }, [setNodes, setEdges]);
 
-  const backgroundVariant: BackgroundVariant = showGrid ? 'lines' : 'dots';
+  const backgroundVariant: BackgroundVariant = showGrid ? BackgroundVariant.Lines : BackgroundVariant.Dots;
 
   return (
     <UIProviders>
