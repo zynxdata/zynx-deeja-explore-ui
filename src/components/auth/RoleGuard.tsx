@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { useUserRole, UserRole } from '@/hooks/useUserRole';
 import { Card } from '@/components/ui/card';
 import { Shield, AlertTriangle } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
-interface RoleGuardProps {
+export interface RoleGuardProps {
   children: React.ReactNode;
   requiredRole?: UserRole | UserRole[];
   requireAdmin?: boolean;
@@ -12,7 +13,7 @@ interface RoleGuardProps {
   fallback?: React.ReactNode;
 }
 
-const RoleGuard: React.FC<RoleGuardProps> = ({
+export const RoleGuard: React.FC<RoleGuardProps> = ({
   children,
   requiredRole,
   requireAdmin = false,

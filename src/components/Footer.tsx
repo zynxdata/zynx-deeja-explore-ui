@@ -1,8 +1,13 @@
-// Zynx logo component since asset download failed
 
-const Footer = () => {
+import React from 'react';
+
+export interface FooterProps {
+  className?: string;
+}
+
+export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
   return (
-    <footer className="bg-foreground text-background py-8 relative">
+    <footer className={`bg-foreground text-background py-8 relative ${className}`}>
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-3 gap-8">
           <div>

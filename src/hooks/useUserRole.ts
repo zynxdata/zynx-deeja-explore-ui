@@ -1,10 +1,11 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/auth/AuthProvider';
 
 export type UserRole = 'owner' | 'admin' | 'user';
 
-interface UserRoleData {
+export interface UserRoleData {
   role: UserRole | null;
   loading: boolean;
   isAdmin: boolean;
@@ -62,3 +63,5 @@ export const useUserRole = (): UserRoleData => {
     isAdminOrOwner,
   };
 };
+
+export default useUserRole;

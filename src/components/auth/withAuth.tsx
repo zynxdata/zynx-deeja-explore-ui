@@ -4,18 +4,18 @@ import { useAuth } from '@/components/auth/AuthProvider';
 import { Navigate } from 'react-router-dom';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
-interface WithAuthProps {
+export interface WithAuthOptions {
   redirectTo?: string;
   requiresAuth?: boolean;
 }
 
 export function withAuth<P extends object>(
   WrappedComponent: React.ComponentType<P>,
-  options: WithAuthProps = {}
-) {
+  options: WithAuthOptions = {}
+): React.FC<P> {
   const { redirectTo = '/auth', requiresAuth = true } = options;
 
-  return function AuthenticatedComponent(props: P) {
+  const AuthenticatedComponent: React.FC<P> = (props) => {
     const { user, loading } = useAuth();
 
     if (loading) {
@@ -36,4 +36,10 @@ export function withAuth<P extends object>(
 
     return <WrappedComponent {...props} />;
   };
+
+  AuthenticatedComponent.displayName = `withAuth(${WrappedComponent.displayName || WrappedComponent.name})`;
+
+  return AuthenticatedComponent;
 }
+
+export default withAuth;

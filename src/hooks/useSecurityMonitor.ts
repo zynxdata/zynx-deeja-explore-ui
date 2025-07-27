@@ -2,10 +2,10 @@
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/auth/AuthProvider';
 
-type SecurityEventType = 'failed_auth' | 'suspicious_activity' | 'api_abuse' | 'invalid_input' | 'rate_limit_exceeded';
-type SecuritySeverity = 'low' | 'medium' | 'high' | 'critical';
+export type SecurityEventType = 'failed_auth' | 'suspicious_activity' | 'api_abuse' | 'invalid_input' | 'rate_limit_exceeded';
+export type SecuritySeverity = 'low' | 'medium' | 'high' | 'critical';
 
-interface SecurityEventDetails {
+export interface SecurityEventDetails {
   event_type: SecurityEventType;
   details: Record<string, any>;
   severity: SecuritySeverity;
@@ -13,10 +13,19 @@ interface SecurityEventDetails {
   user_agent?: string;
 }
 
-export const useSecurityMonitor = () => {
+export interface SecurityMonitorHook {
+  logSecurityEvent: (eventDetails: SecurityEventDetails) => Promise<void>;
+  logFailedAuth: (details: Record<string, any>) => void;
+  logSuspiciousActivity: (details: Record<string, any>) => void;
+  logApiAbuse: (details: Record<string, any>) => void;
+  logInvalidInput: (details: Record<string, any>) => void;
+  logRateLimitExceeded: (details: Record<string, any>) => void;
+}
+
+export const useSecurityMonitor = (): SecurityMonitorHook => {
   const { user } = useAuth();
 
-  const logSecurityEvent = async (eventDetails: SecurityEventDetails) => {
+  const logSecurityEvent = async (eventDetails: SecurityEventDetails): Promise<void> => {
     try {
       const { error } = await supabase.functions.invoke('security-monitor', {
         body: {
@@ -84,3 +93,5 @@ export const useSecurityMonitor = () => {
     logRateLimitExceeded
   };
 };
+
+export default useSecurityMonitor;
