@@ -2,13 +2,16 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Brain, MessageCircle, Image, BookOpen, LogOut, LogIn } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Menu, X, Brain, MessageCircle, Image, BookOpen, LogOut, LogIn, Shield, Crown } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const { role, isAdminOrOwner } = useUserRole();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -17,6 +20,7 @@ const Navigation = () => {
     { path: "/research", label: "วิจัย AGI", icon: BookOpen },
     { path: "/chat", label: "AI Chat", icon: MessageCircle, protected: true },
     { path: "/image-generator", label: "สร้างรูปภาพ", icon: Image, protected: true },
+    { path: "/admin", label: "Admin", icon: Shield, protected: true, adminOnly: true },
   ];
 
   return (
@@ -36,8 +40,9 @@ const Navigation = () => {
             {navItems.map((item) => {
               const Icon = item.icon;
               const shouldShow = !item.protected || user;
+              const shouldShowAdmin = !item.adminOnly || isAdminOrOwner;
               
-              if (!shouldShow) return null;
+              if (!shouldShow || !shouldShowAdmin) return null;
               
               return (
                 <Link
@@ -60,9 +65,18 @@ const Navigation = () => {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <div className="flex items-center space-x-4">
-                <span className="text-sm text-muted-foreground">
-                  สวัสดี, {user.email}
-                </span>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-muted-foreground">
+                    สวัสดี, {user.email}
+                  </span>
+                  {role && role !== 'user' && (
+                    <Badge variant={role === 'owner' ? 'default' : 'secondary'} className="text-xs">
+                      {role === 'owner' && <Crown className="h-3 w-3 mr-1" />}
+                      {role === 'admin' && <Shield className="h-3 w-3 mr-1" />}
+                      {role.toUpperCase()}
+                    </Badge>
+                  )}
+                </div>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -108,8 +122,9 @@ const Navigation = () => {
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const shouldShow = !item.protected || user;
+                const shouldShowAdmin = !item.adminOnly || isAdminOrOwner;
                 
-                if (!shouldShow) return null;
+                if (!shouldShow || !shouldShowAdmin) return null;
                 
                 return (
                   <Link
@@ -132,8 +147,15 @@ const Navigation = () => {
               <div className="pt-4 border-t border-border">
                 {user ? (
                   <div className="space-y-2">
-                    <div className="px-3 py-2 text-sm text-muted-foreground">
-                      สวัสดี, {user.email}
+                    <div className="px-3 py-2 text-sm">
+                      <div className="text-muted-foreground">สวัสดี, {user.email}</div>
+                      {role && role !== 'user' && (
+                        <Badge variant={role === 'owner' ? 'default' : 'secondary'} className="text-xs mt-1">
+                          {role === 'owner' && <Crown className="h-3 w-3 mr-1" />}
+                          {role === 'admin' && <Shield className="h-3 w-3 mr-1" />}
+                          {role.toUpperCase()}
+                        </Badge>
+                      )}
                     </div>
                     <Button
                       variant="ghost"

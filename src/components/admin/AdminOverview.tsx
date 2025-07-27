@@ -6,6 +6,7 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useAsyncState } from '@/hooks/useAsyncState';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
+import AdminUserManagement from './AdminUserManagement';
 import { Users, Database, Shield, Activity, TrendingUp, AlertTriangle } from 'lucide-react';
 
 interface SystemStats {
@@ -160,6 +161,8 @@ const AdminOverview = () => {
             </div>
           </div>
         </FeatureCard>
+
+        <AdminUserManagement />
       </div>
     </div>
   );
