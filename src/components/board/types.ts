@@ -1,5 +1,6 @@
 
 import { LucideIcon } from 'lucide-react';
+import { Node, Edge } from '@xyflow/react';
 
 export interface ComponentNode {
   id: string;
@@ -14,20 +15,24 @@ export interface ComponentNode {
   complexity: 'low' | 'medium' | 'high';
 }
 
-export interface BoardNode {
+export interface BoardNodeData extends Record<string, unknown> {
   id: string;
+  name: string;
   type: string;
-  position: { x: number; y: number };
-  data: ComponentNode & {
-    dependents: number;
-  };
+  category: string;
+  icon: LucideIcon;
+  dependencies: string[];
+  description: string;
+  file: string;
+  status: string;
+  complexity: string;
+  dependents: number;
 }
 
-export interface BoardEdge {
-  id: string;
-  source: string;
-  target: string;
-  type?: string;
-  animated?: boolean;
-  style?: React.CSSProperties;
+export interface BoardNode extends Node {
+  data: BoardNodeData;
+}
+
+export interface BoardEdge extends Edge {
+  // React Flow Edge already includes markerEnd as optional
 }

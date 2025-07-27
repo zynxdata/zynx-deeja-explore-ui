@@ -3,21 +3,10 @@ import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LucideIcon } from 'lucide-react';
+import { BoardNodeData } from '../types';
 
 interface FlowNodeProps {
-  data: {
-    id: string;
-    name: string;
-    type: string;
-    category: string;
-    icon: LucideIcon;
-    status: string;
-    complexity: string;
-    dependencies: string[];
-    dependents: number;
-    description: string;
-  };
+  data: BoardNodeData;
   selected: boolean;
 }
 

@@ -11,7 +11,8 @@ import {
   Connection,
   Edge,
   Node,
-  MarkerType
+  MarkerType,
+  BackgroundVariant
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -20,7 +21,7 @@ import { BoardHeader } from './BoardHeader';
 import { NodesPalette } from './sidebar/NodesPalette';
 import { PropertiesPanel } from './sidebar/PropertiesPanel';
 import { UIProviders } from './providers/UIProviders';
-import { ComponentNode, BoardNode, BoardEdge } from './types';
+import { ComponentNode, BoardNodeData } from './types';
 
 const nodeTypes = {
   flowNode: FlowNode,
@@ -37,8 +38,8 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({ components }) => {
 
   // Convert components to nodes and edges
   const { initialNodes, initialEdges } = useMemo(() => {
-    const nodes: BoardNode[] = [];
-    const edges: BoardEdge[] = [];
+    const nodes: Node[] = [];
+    const edges: Edge[] = [];
     
     // Create nodes in grid layout
     const gridSize = Math.ceil(Math.sqrt(components.length));
@@ -51,6 +52,11 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({ components }) => {
         c.dependencies.includes(component.id)
       ).length;
       
+      const nodeData: BoardNodeData = {
+        ...component,
+        dependents
+      };
+      
       nodes.push({
         id: component.id,
         type: 'flowNode',
@@ -58,10 +64,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({ components }) => {
           x: col * 300 + 50, 
           y: row * 200 + 50 
         },
-        data: {
-          ...component,
-          dependents
-        }
+        data: nodeData
       });
     });
 
@@ -108,10 +111,11 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({ components }) => {
   const filteredNodes = useMemo(() => {
     if (!searchTerm) return nodes;
     
-    return nodes.filter(node => 
-      node.data.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      node.data.description.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    return nodes.filter(node => {
+      const data = node.data as BoardNodeData;
+      return data.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+             data.description.toLowerCase().includes(searchTerm.toLowerCase());
+    });
   }, [nodes, searchTerm]);
 
   const selectedNodes = useMemo(() => {
@@ -145,7 +149,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({ components }) => {
     setNodes(nds => 
       nds.map(node => 
         node.id === componentId 
-          ? { ...node, data: { ...node.data, ...updates } }
+          ? { ...node, data: { ...node.data, ...updates } as BoardNodeData }
           : node
       )
     );
@@ -158,6 +162,8 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({ components }) => {
     ));
     setSelectedNodeId(null);
   }, [setNodes, setEdges]);
+
+  const backgroundVariant: BackgroundVariant = showGrid ? 'lines' : 'dots';
 
   return (
     <UIProviders>
@@ -194,7 +200,7 @@ export const BoardCanvas: React.FC<BoardCanvasProps> = ({ components }) => {
               className="bg-background"
             >
               <Background 
-                variant={showGrid ? 'lines' : 'dots'} 
+                variant={backgroundVariant}
                 gap={20} 
                 size={1}
                 color="hsl(var(--border))"
