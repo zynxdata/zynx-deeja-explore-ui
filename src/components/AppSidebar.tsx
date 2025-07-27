@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Brain, MessageCircle, Image, BookOpen, LogOut, LogIn, User, Settings } from "lucide-react";
+import { Brain, MessageCircle, Image, BookOpen, LogOut, LogIn, User, Settings, Gamepad2 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import {
   Sidebar,
@@ -28,6 +28,7 @@ export function AppSidebar() {
 
   const publicNavItems = [
     { path: "/research", label: "วิจัย AGI", icon: BookOpen },
+    { path: "/algorithm-game", label: "เกม Algorithm", icon: Gamepad2 },
   ];
 
   const protectedNavItems = [

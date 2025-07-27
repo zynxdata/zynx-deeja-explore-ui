@@ -14,6 +14,7 @@ import Index from "./pages/Index";
 import Chat from "./pages/Chat";
 import ImageGenerator from "./pages/ImageGenerator";
 import Research from "./pages/Research";
+import AlgorithmGame from "./pages/AlgorithmGame";
 import AuthPage from "./components/auth/AuthPage";
 import AdminSetup from "./pages/AdminSetup";
 import NotFound from "./pages/NotFound";
@@ -138,6 +139,7 @@ const App = () => {
                         <Route path="/admin-setup" element={<AdminSetup />} />
                         <Route path="/" element={<Index />} />
                         <Route path="/research" element={<Research />} />
+                        <Route path="/algorithm-game" element={<AlgorithmGame />} />
                         <Route path="/flowchart" element={<ComponentFlowchart />} />
                         <Route path="/chat" element={<ProtectedRoute>
                               <Chat />
