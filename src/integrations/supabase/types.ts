@@ -486,6 +486,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      create_first_owner: {
+        Args: { owner_email: string; owner_password: string }
+        Returns: {
+          user_id: string
+          success: boolean
+          message: string
+        }[]
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["app_role"]
@@ -521,6 +529,13 @@ export type Database = {
           leaderboard_id: string
         }
         Returns: undefined
+      }
+      upgrade_user_to_owner: {
+        Args: { user_email: string }
+        Returns: {
+          success: boolean
+          message: string
+        }[]
       }
     }
     Enums: {
