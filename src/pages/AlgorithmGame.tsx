@@ -4,7 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { Brain, Target, BookOpen, MessageSquare, Dna, Shuffle, CheckCircle, XCircle, Trophy } from 'lucide-react';
+import { Brain, Target, BookOpen, MessageSquare, Dna, Shuffle, CheckCircle, XCircle, Trophy, Crown, Users } from 'lucide-react';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { useGameData } from '@/hooks/useGameData';
+import { PlayerSetup } from '@/components/game/PlayerSetup';
+import { Leaderboard } from '@/components/game/Leaderboard';
 
 interface Algorithm {
   id: string;
@@ -78,6 +82,20 @@ const scenarios = [
 ];
 
 export default function AlgorithmGame() {
+  const { user } = useAuth();
+  const {
+    currentPlayer,
+    currentSession,
+    leaderboards,
+    topPlayers,
+    zoneChampions,
+    championshipEnabled,
+    loading: gameDataLoading,
+    initializePlayer,
+    initializeSession,
+    updateSession
+  } = useGameData();
+
   const [gameStats, setGameStats] = useState<GameStats>({
     score: 0,
     correctAnswers: 0,
@@ -91,7 +109,7 @@ export default function AlgorithmGame() {
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
-  const [gameMode, setGameMode] = useState<'study' | 'quiz'>('study');
+  const [gameMode, setGameMode] = useState<'study' | 'quiz' | 'leaderboard'>('study');
 
   const filteredAlgorithms = selectedCategory === 'all' 
     ? algorithms 
@@ -104,7 +122,7 @@ export default function AlgorithmGame() {
     setShowResult(false);
   };
 
-  const handleAlgorithmSelect = (algorithmId: string) => {
+  const handleAlgorithmSelect = async (algorithmId: string) => {
     if (gameMode === 'study') {
       setSelectedAlgorithm(algorithmId);
       return;
@@ -138,6 +156,24 @@ export default function AlgorithmGame() {
     };
     
     setGameStats(newStats);
+
+    // Update database session if player is set up
+    if (currentSession && algorithm) {
+      await updateSession(
+        correct,
+        algorithm.category,
+        newStats.currentStreak,
+        newStats.totalQuestions,
+        newStats.correctAnswers
+      );
+    }
+  };
+
+  const handlePlayerSetup = async (displayName: string, isAi: boolean, aiDescription?: string) => {
+    const player = await initializePlayer(displayName, isAi, aiDescription);
+    if (player) {
+      await initializeSession();
+    }
   };
 
   useEffect(() => {
@@ -207,12 +243,30 @@ export default function AlgorithmGame() {
         </CardContent>
       </Card>
 
-      {/* Game Mode Selector */}
-      <Tabs value={gameMode} onValueChange={(value) => setGameMode(value as 'study' | 'quiz')} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="study">โหมดศึกษา</TabsTrigger>
-          <TabsTrigger value="quiz">โหมดทดสอบ</TabsTrigger>
-        </TabsList>
+      {/* Show player setup if not authenticated or no current player */}
+      {!user ? (
+        <Card className="max-w-md mx-auto">
+          <CardHeader className="text-center">
+            <CardTitle>เข้าสู่ระบบเพื่อเล่นเกม</CardTitle>
+            <CardDescription>
+              กรุณาเข้าสู่ระบบเพื่อบันทึกคะแนนและเข้าร่วมการแข่งขัน
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      ) : !currentPlayer ? (
+        <PlayerSetup onPlayerCreated={handlePlayerSetup} loading={gameDataLoading} />
+      ) : (
+        <>
+          {/* Game Mode Selector */}
+          <Tabs value={gameMode} onValueChange={(value) => setGameMode(value as 'study' | 'quiz' | 'leaderboard')} className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="study">โหมดศึกษา</TabsTrigger>
+              <TabsTrigger value="quiz">โหมดทดสอบ</TabsTrigger>
+              <TabsTrigger value="leaderboard">
+                <Crown className="h-4 w-4 mr-2" />
+                อันดับ
+              </TabsTrigger>
+            </TabsList>
 
         <TabsContent value="study" className="space-y-6">
           {/* Category Filter */}
@@ -327,7 +381,17 @@ export default function AlgorithmGame() {
             ))}
           </div>
         </TabsContent>
+
+        <TabsContent value="leaderboard" className="space-y-6">
+          <Leaderboard 
+            topPlayers={topPlayers}
+            zoneChampions={zoneChampions}
+            championshipEnabled={championshipEnabled}
+          />
+        </TabsContent>
       </Tabs>
+        </>
+      )}
     </div>
   );
 }
