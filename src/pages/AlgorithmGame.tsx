@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -73,13 +74,75 @@ const categories = [
   { id: 'bio-edge', name: 'Bio-AI / Edge AI / Compliance', icon: Dna, color: 'destructive' },
 ];
 
-const scenarios = [
-  "Deeja กำลังสนทนากับผู้ใช้ที่หงุดหงิดเรื่องงาน คุณจะใช้อัลกอริทึมไหนให้ Deeja เข้าใจอารมณ์และตอบสนองที่เหมาะสม?",
-  "Zynx Context Engine ต้องการจดจำบุคลิกของผู้ใช้แต่ละคน คุณจะใช้วิธีไหนในการเก็บและวิเคราะห์ข้อมูลนี้?",
-  "PDF Master ต้องแปลเอกสารทางการแพทย์จากไทยเป็นอังกฤษโดยคงความหมายไว้ คุณจะเลือกอัลกอริทึมไหน?",
-  "ระบบ Zynx ต้องการปรับปรุงการตอบสนองจากการ feedback ของผู้ใช้ คุณจะใช้เทคนิคการเรียนรู้แบบไหน?",
-  "Compliance Engine ต้องตรวจสอบว่าการตอบของ AI เป็นไปตามกฎหมายไซเบอร์ไทย อัลกอริทึมไหนเหมาะสม?",
-];
+// Dynamic scenario generation templates
+const scenarioTemplates = {
+  contexts: [
+    'ผู้ใช้ที่หงุดหงิดเรื่องงาน',
+    'นักศึกษาที่กำลังเรียนรู้',
+    'ผู้บริหารที่ต้องการข้อมูลสรุป',
+    'นักพัฒนาที่กำลังแก้บัค',
+    'ลูกค้าที่มีข้อร้องเรียน',
+    'ทีมการตลาดที่ต้องการวิเคราะห์ข้อมูล',
+    'นักวิจัยที่ต้องการข้อมูลละเอียด',
+    'ผู้ใช้งานใหม่ที่ไม่เข้าใจระบบ',
+    'ผู้เชี่ยวชาญที่ต้องการคำแนะนำเชิงลึก',
+    'ทีมที่กำลังทำงานร่วมกัน'
+  ],
+  tasks: [
+    'สนทนาและให้คำแนะนำ',
+    'แปลเอกสารสำคัญ',
+    'วิเคราะห์ข้อมูลในสเปรดชีต',
+    'สร้างงานนำเสนอ',
+    'ประมวลผลเอกสาร PDF',
+    'จัดการหน่วยความจำระยะยาว',
+    'ตรวจสอบการปฏิบัติตามกฎหมาย',
+    'ปรับปรุงประสิทธิภาพของระบบ',
+    'เรียนรู้จากข้อมูลผู้ใช้',
+    'พยากรณ์และวิเคราะห์แนวโน้ม'
+  ],
+  systems: [
+    'Deeja AI Chatbot',
+    'Context-Aware Translator',
+    'AI Spreadsheet Assistant',
+    'Live Presentation Engine',
+    'PDF Master System',
+    'Memory Management Service',
+    'Compliance Engine',
+    'Performance Monitor',
+    'User Analytics Platform',
+    'Ethics Framework'
+  ],
+  challenges: [
+    'เข้าใจอารมณ์และตอบสนองที่เหมาะสม',
+    'รักษาความหมายและวัฒนธรรมในการแปล',
+    'วิเคราะห์ข้อมูลและหาแนวโน้ม',
+    'ปรับเนื้อหาตามกลุ่มเป้าหมาย',
+    'แยกข้อมูลจากเอกสารที่ซับซ้อน',
+    'จดจำและเรียนรู้จากการโต้ตอบ',
+    'ตรวจสอบการปฏิบัติตามข้อกำหนด',
+    'ปรับขนาดและประสิทธิภาพอัตโนมัติ',
+    'รักษาความเป็นส่วนตัวของข้อมูล',
+    'รับมือกับข้อมูลหลากหลายรูปแบบ'
+  ]
+};
+
+// Generate unlimited scenarios
+const generateRandomScenario = (): string => {
+  const context = scenarioTemplates.contexts[Math.floor(Math.random() * scenarioTemplates.contexts.length)];
+  const task = scenarioTemplates.tasks[Math.floor(Math.random() * scenarioTemplates.tasks.length)];
+  const system = scenarioTemplates.systems[Math.floor(Math.random() * scenarioTemplates.systems.length)];
+  const challenge = scenarioTemplates.challenges[Math.floor(Math.random() * scenarioTemplates.challenges.length)];
+
+  const templates = [
+    `${system} กำลัง${task}กับ${context} คุณจะใช้อัลกอริทึมไหนเพื่อ${challenge}?`,
+    `เมื่อ${context}ต้องการให้ ${system} ${task} ระบบต้อง${challenge} คุณจะเลือกวิธีไหน?`,
+    `ระบบ${system}ต้องการ${challenge}สำหรับ${context}ที่กำลัง${task} อัลกอริทึมไหนเหมาะสม?`,
+    `${context}ใช้${system}เพื่อ${task}แต่ต้องการให้ระบบ${challenge} คุณแนะนำอัลกอริทึมไหน?`,
+    `ในสถานการณ์ที่${system}ต้อง${challenge}เมื่อ${context}${task} คุณจะเลือกอัลกอริทึมแบบไหน?`
+  ];
+
+  return templates[Math.floor(Math.random() * templates.length)];
+};
 
 export default function AlgorithmGame() {
   const { user } = useAuth();
@@ -116,8 +179,8 @@ export default function AlgorithmGame() {
     : algorithms.filter(algo => algo.category === selectedCategory);
 
   const generateNewScenario = () => {
-    const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
-    setCurrentScenario(randomScenario);
+    const newScenario = generateRandomScenario();
+    setCurrentScenario(newScenario);
     setSelectedAlgorithm(null);
     setShowResult(false);
   };
@@ -128,20 +191,34 @@ export default function AlgorithmGame() {
       return;
     }
 
-    // Quiz mode
+    // Quiz mode - Enhanced scoring logic
     setSelectedAlgorithm(algorithmId);
     
-    // Simple scoring logic - in real implementation, this would be more sophisticated
     const algorithm = algorithms.find(a => a.id === algorithmId);
-    const scenarioKeywords = currentScenario.toLowerCase();
+    const scenarioLower = currentScenario.toLowerCase();
     let correct = false;
 
-    // Basic matching logic for demo
-    if (scenarioKeywords.includes('อารมณ์') && algorithm?.category === 'supervised') correct = true;
-    if (scenarioKeywords.includes('จดจำ') && algorithm?.category === 'symbolic') correct = true;
-    if (scenarioKeywords.includes('แปล') && algorithm?.category === 'nlp') correct = true;
-    if (scenarioKeywords.includes('feedback') && algorithm?.category === 'reinforcement') correct = true;
-    if (scenarioKeywords.includes('กฎหมาย') && algorithm?.category === 'bio-edge') correct = true;
+    // More sophisticated matching logic based on keywords and context
+    const keywordMatches = {
+      reinforcement: ['เรียนรู้จาก', 'ปรับปรุง', 'feedback', 'ประสบการณ์', 'การตัดสินใจ', 'วางแผน'],
+      symbolic: ['จดจำ', 'กฎ', 'นโยบาย', 'compliance', 'logic', 'case-based', 'ความเชื่อมโยง'],
+      supervised: ['จำแนก', 'ประเภท', 'อารมณ์', 'ประมาณ', 'แยกแยะ', 'วิเคราะห์'],
+      nlp: ['แปล', 'ภาษา', 'สนทนา', 'เสียง', 'ข้อความ', 'บริบท', 'ความหมาย'],
+      'bio-edge': ['ความเป็นส่วนตัว', 'กฎหมาย', 'monitor', 'ประสิทธิภาพ', 'ปรับขนาด', 'edge', 'mobile']
+    };
+
+    // Check if scenario contains keywords related to the selected algorithm's category
+    if (algorithm && keywordMatches[algorithm.category as keyof typeof keywordMatches]) {
+      const categoryKeywords = keywordMatches[algorithm.category as keyof typeof keywordMatches];
+      correct = categoryKeywords.some(keyword => scenarioLower.includes(keyword));
+      
+      // Additional bonus points for exact system matches
+      if (scenarioLower.includes('deeja') && algorithm.category === 'nlp') correct = true;
+      if (scenarioLower.includes('context engine') && algorithm.category === 'symbolic') correct = true;
+      if (scenarioLower.includes('memory') && algorithm.category === 'symbolic') correct = true;
+      if (scenarioLower.includes('pdf') && algorithm.category === 'nlp') correct = true;
+      if (scenarioLower.includes('spreadsheet') && algorithm.category === 'supervised') correct = true;
+    }
 
     setIsCorrect(correct);
     setShowResult(true);
@@ -203,7 +280,7 @@ export default function AlgorithmGame() {
           🧠 Zynx Algorithm Game
         </h1>
         <p className="text-lg text-muted-foreground">
-          เรียนรู้อัลกอริทึม AI ผ่านสถานการณ์จริงใน Zynx CaaS Platform
+          เรียนรู้อัลกอริทึม AI ผ่านสถานการณ์จริงใน Zynx CaaS Platform (คำถามไม่จำกัด!)
         </p>
       </div>
 
@@ -333,7 +410,7 @@ export default function AlgorithmGame() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                🎯 สถานการณ์จำลอง
+                🎯 สถานการณ์จำลอง (ไม่จำกัดคำถาม)
                 <Button onClick={generateNewScenario} variant="outline" size="sm">
                   <Shuffle className="h-4 w-4 mr-2" />
                   สถานการณ์ใหม่
@@ -355,6 +432,9 @@ export default function AlgorithmGame() {
                       คุณเลือก: <strong>{algorithms.find(a => a.id === selectedAlgorithm)?.name}</strong>
                     </p>
                   )}
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    💡 กดปุ่ม "สถานการณ์ใหม่" เพื่อรับคำถามแบบสุ่มถัดไป
+                  </p>
                 </div>
               )}
             </CardContent>
