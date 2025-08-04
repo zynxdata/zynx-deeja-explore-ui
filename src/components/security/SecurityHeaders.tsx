@@ -27,10 +27,10 @@ const SecurityHeaders = () => {
     contentType.content = 'nosniff';
     document.head.appendChild(contentType);
 
-    // X-Frame-Options
+    // X-Frame-Options - Allow same origin and Lovable editor
     const frameOptions = document.createElement('meta');
     frameOptions.httpEquiv = 'X-Frame-Options';
-    frameOptions.content = 'DENY';
+    frameOptions.content = 'SAMEORIGIN';
     document.head.appendChild(frameOptions);
 
     // X-XSS-Protection
