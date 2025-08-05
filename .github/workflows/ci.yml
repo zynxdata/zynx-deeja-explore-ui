@@ -1,0 +1,213 @@
+name: Zynx AGI CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+
+jobs:
+  # Backend Tests & Linting
+  backend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install Python dependencies
+      run: |
+        cd backend
+        pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run backend linting
+      run: |
+        cd backend
+        python -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        python -m flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    
+    - name: Run backend tests with coverage
+      run: |
+        cd backend
+        python -m pytest tests/ -v --cov=main --cov-report=xml --cov-report=html --cov-fail-under=80
+    
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./backend/coverage.xml
+        flags: backend
+        name: backend-coverage
+    
+    - name: Build backend Docker image
+      run: |
+        cd backend
+        docker build -t zynx-agi-backend:${{ github.sha }} .
+
+  # Frontend Tests & Linting
+  frontend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Node.js ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+    
+    - name: Install frontend dependencies
+      run: npm ci
+    
+    - name: Run frontend linting
+      run: npm run lint
+    
+    - name: Run frontend tests
+      run: npm test --if-present
+    
+    - name: Build frontend
+      run: npm run build
+    
+    - name: Build frontend Docker image
+      run: docker build -f Dockerfile.frontend -t zynx-agi-frontend:${{ github.sha }} .
+
+  # Documentation Generation
+  docs:
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install dependencies
+      run: |
+        cd backend
+        pip install -r requirements.txt
+    
+    - name: Generate OpenAPI documentation
+      run: |
+        cd backend
+        python -c "
+        import uvicorn
+        import subprocess
+        import time
+        import requests
+        
+        # Start the server
+        process = subprocess.Popen(['uvicorn', 'main:app', '--host', '0.0.0.0', '--port', '8000'])
+        time.sleep(5)
+        
+        # Generate OpenAPI spec
+        response = requests.get('http://localhost:8000/openapi.json')
+        with open('openapi.json', 'w') as f:
+            f.write(response.text)
+        
+        process.terminate()
+        "
+    
+    - name: Upload documentation artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: api-docs
+        path: |
+          backend/openapi.json
+          backend/docs/
+
+  # Integration Tests
+  integration:
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Start services with docker-compose
+      run: |
+        docker-compose up -d
+        sleep 30
+    
+    - name: Run integration tests
+      run: |
+        # Test backend health
+        curl -f http://localhost:8000/health
+        
+        # Test frontend accessibility
+        curl -f http://localhost:5173
+        
+        # Test API endpoints
+        curl -f http://localhost:8000/api/v1/agi/context
+    
+    - name: Stop services
+      run: docker-compose down
+
+  # Security Scan
+  security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+    
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  # Deploy (only on main branch)
+  deploy:
+    needs: [backend, frontend, docs, integration, security]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Deploy to production
+      run: |
+        echo "🚀 Deploying to production..."
+        # Add your deployment logic here
+        # Example: deploy to cloud platform
+    
+    - name: Notify deployment
+      run: |
+        echo "✅ Deployment completed successfully!"
+        # Add notification logic here (Slack, Discord, etc.)
