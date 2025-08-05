@@ -3,10 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Brain, Sparkles, Zap, BookOpen, Network, Heart, ArrowRight, Code, Users, Globe } from "lucide-react";
 import { Link } from "react-router-dom";
+import { ValueBanner } from "./enhanced/ValueBanner";
+import { MVPWorkspaces } from "./enhanced/MVPWorkspaces";
+import { TestimonialsSection } from "./enhanced/TestimonialsSection";
 
 const HeroSection = () => {
   return (
-    <section className="min-h-screen bg-hero-gradient flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-hero-gradient">
+      {/* Hero Section */}
+      <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-20 w-32 h-32 bg-agi-yellow/20 rounded-full animate-float"></div>
@@ -20,7 +25,13 @@ const HeroSection = () => {
           {/* Left side - Content */}
           <div className="text-center lg:text-left">
             <div className="mb-6">
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 animate-fade-in">
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
+                <Heart className="h-4 w-4 text-agi-orange animate-pulse" />
+                <span className="text-white/90 text-sm font-medium">Zynx & Deeja Partnership</span>
+                <Heart className="h-4 w-4 text-agi-orange animate-pulse" />
+              </div>
+              
+              <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 animate-fade-in leading-tight">
                 ZYNX
                 <br />
                 <span className="text-agi-yellow">CONTEXT</span>
@@ -28,36 +39,42 @@ const HeroSection = () => {
                 <span className="text-agi-orange">AGI</span>
               </h1>
               
-              <div className="inline-block bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
-                <span className="text-white/90 text-sm font-medium">Build AI That Actually Understands Context</span>
+              <div className="inline-block bg-gradient-to-r from-agi-yellow/20 to-agi-orange/20 backdrop-blur-sm rounded-full px-6 py-3 mb-4">
+                <span className="text-white font-semibold text-lg">AGI-First Context-as-a-Service</span>
               </div>
             </div>
             
-            <p className="text-xl text-white/90 mb-6 max-w-lg">
-              ระบบ AGI แรกที่เชื่อมต่อความละเอียดอ่อนของมนุษย์กับปัญญาประดิษฐ์ 
-              ผ่านการตระหนักรู้บริบทเชิงลึก
+            <p className="text-xl text-white/90 mb-4 max-w-lg font-medium">
+              เราสร้าง AI ที่เข้าใจความเป็นมนุษย์
+            </p>
+            <p className="text-lg text-white/80 mb-6 max-w-lg">
+              We build AI that understands what it means to be human
             </p>
 
-            <p className="text-lg text-white/70 mb-8 max-w-lg">
+            <p className="text-lg text-white/70 mb-8 max-w-lg leading-relaxed">
               Ship context-aware AI features 10x faster with our modular AGI framework. 
-              From emotional intelligence to cultural adaptation.
+              From emotional intelligence to cultural adaptation, Zynx & Deeja bring warmth and empathy to artificial intelligence.
             </p>
 
             {/* Main CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
-              <Button variant="hero" size="lg" className="group" asChild>
-                <Link to="/chat">
+              <Button variant="hero" size="lg" className="group shadow-2xl" asChild>
+                <Link to="/admin-setup">
                   <Sparkles className="mr-2 h-5 w-5 group-hover:animate-spin" />
-                  Start Building (Free)
+                  Try Now - Start Free
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
               <Button variant="explore" size="lg" className="group" asChild>
-                <Link to="/research">
-                  <BookOpen className="mr-2 h-5 w-5 group-hover:animate-pulse" />
-                  Explore Live Demo
+                <Link to="/chat">
+                  <Brain className="mr-2 h-5 w-5 group-hover:animate-pulse" />
+                  Meet Deeja AI
                 </Link>
               </Button>
+            </div>
+            
+            <div className="text-sm text-white/60 mb-8">
+              ✨ No credit card required • 5-minute setup • Thai-English bilingual
             </div>
 
             {/* Value Props */}
@@ -65,19 +82,22 @@ const HeroSection = () => {
               <Card className="p-4 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 transition-all duration-300 group cursor-pointer">
                 <Network className="h-8 w-8 text-agi-yellow mb-2 group-hover:animate-pulse" />
                 <h3 className="text-white font-semibold mb-1">Context-as-a-Service</h3>
-                <p className="text-white/70 text-sm">API-first contextual intelligence</p>
+                <p className="text-white/70 text-sm">บริการบริบทเชิงลึก</p>
+                <p className="text-white/60 text-xs">API-first contextual intelligence</p>
               </Card>
               
               <Card className="p-4 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 transition-all duration-300 group cursor-pointer">
-                <Heart className="h-8 w-8 text-agi-orange mb-2 group-hover:animate-spin" />
-                <h3 className="text-white font-semibold mb-1">Emotional AI</h3>
-                <p className="text-white/70 text-sm">AI ที่เข้าใจอารมณ์และวัฒนธรรม</p>
+                <Heart className="h-8 w-8 text-agi-orange mb-2 group-hover:animate-pulse" />
+                <h3 className="text-white font-semibold mb-1">Emotional Intelligence</h3>
+                <p className="text-white/70 text-sm">ความฉลาดทางอารมณ์</p>
+                <p className="text-white/60 text-xs">AI that understands feelings & culture</p>
               </Card>
               
               <Card className="p-4 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 transition-all duration-300 group cursor-pointer">
                 <Brain className="h-8 w-8 text-primary mb-2 group-hover:animate-bounce" />
                 <h3 className="text-white font-semibold mb-1">Self-Learning</h3>
-                <p className="text-white/70 text-sm">AI that improves from every interaction</p>
+                <p className="text-white/70 text-sm">การเรียนรู้ด้วยตัวเอง</p>
+                <p className="text-white/60 text-xs">Improves from every interaction</p>
               </Card>
             </div>
           </div>
@@ -88,9 +108,12 @@ const HeroSection = () => {
               {/* Deeja character representation */}
               <div className="w-80 h-80 bg-gradient-to-br from-agi-yellow/20 to-agi-orange/20 rounded-full flex items-center justify-center backdrop-blur-sm border-2 border-white/30 animate-float">
                 <div className="text-center">
-                  <Brain className="h-20 w-20 text-white mb-4 animate-pulse mx-auto" />
-                  <p className="text-white font-semibold text-lg">Deeja AI</p>
-                  <p className="text-white/70">Cultural AGI Assistant</p>
+                  <Heart className="h-16 w-16 text-agi-orange mb-2 animate-pulse mx-auto" />
+                  <Brain className="h-16 w-16 text-white mb-4 animate-pulse mx-auto" />
+                  <p className="text-white font-bold text-xl">Deeja AI</p>
+                  <p className="text-agi-yellow font-semibold">ดีจา เอไอ</p>
+                  <p className="text-white/80 text-sm mt-2">Your Empathetic AI Partner</p>
+                  <p className="text-white/70 text-xs">พาร์ทเนอร์ AI ที่เข้าอกเข้าใจ</p>
                   <div className="flex justify-center gap-2 mt-4">
                     <div className="w-2 h-2 bg-agi-yellow rounded-full animate-pulse"></div>
                     <div className="w-2 h-2 bg-agi-orange rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
@@ -181,7 +204,17 @@ const HeroSection = () => {
           </div>
         </div>
       </div>
-    </section>
+      </section>
+
+      {/* Value Banner */}
+      <ValueBanner />
+
+      {/* MVP Workspaces */}
+      <MVPWorkspaces />
+
+      {/* Testimonials */}
+      <TestimonialsSection />
+    </div>
   );
 };
 
