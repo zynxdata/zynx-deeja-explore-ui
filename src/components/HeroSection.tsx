@@ -1,10 +1,110 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Brain, Sparkles, Zap } from "lucide-react";
+import { Brain, Sparkles, Zap, Server, AlertCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { apiService, type AGIResponse, type DeejaResponse } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
 const HeroSection = () => {
+  const [agiInfo, setAgiInfo] = useState<AGIResponse | null>(null);
+  const [deejaInfo, setDeejaInfo] = useState<DeejaResponse | null>(null);
+  const [backendStatus, setBackendStatus] = useState<'loading' | 'connected' | 'disconnected'>('loading');
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const checkBackendStatus = async () => {
+      try {
+        const isAvailable = await apiService.isBackendAvailable();
+        setBackendStatus(isAvailable ? 'connected' : 'disconnected');
+        
+        if (isAvailable) {
+          // Load AGI info
+          const agiData = await apiService.getAGIInfo();
+          setAgiInfo(agiData);
+          
+          // Load Deeja info
+          const deejaData = await apiService.meetDeeja();
+          setDeejaInfo(deejaData);
+        }
+      } catch (error) {
+        console.error('Failed to connect to backend:', error);
+        setBackendStatus('disconnected');
+        toast({
+          title: "Backend Connection",
+          description: "Unable to connect to Zynx AGI backend. Running in offline mode.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    checkBackendStatus();
+  }, [toast]);
+
+  const handleMeetDeeja = async () => {
+    try {
+      if (!deejaInfo) {
+        const deejaData = await apiService.meetDeeja();
+        setDeejaInfo(deejaData);
+      }
+      
+      toast({
+        title: "Meet Deeja",
+        description: deejaInfo?.greeting.english || "Hello! Nice to meet you",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to connect with Deeja. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleExploreAGI = async () => {
+    try {
+      if (!agiInfo) {
+        const agiData = await apiService.getAGIInfo();
+        setAgiInfo(agiData);
+      }
+      
+      toast({
+        title: "AGI Exploration",
+        description: agiInfo?.message || "Welcome to Zynx AGI - Culturally Aware Intelligence",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load AGI information. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <section className="min-h-screen bg-hero-gradient flex items-center justify-center relative overflow-hidden">
+      {/* Backend Status Indicator */}
+      <div className="absolute top-4 right-4 z-20">
+        <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm ${
+          backendStatus === 'connected' 
+            ? 'bg-green-500/20 text-green-300 border border-green-500/30' 
+            : backendStatus === 'disconnected'
+            ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+            : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
+        }`}>
+          {backendStatus === 'connected' ? (
+            <Server className="h-4 w-4" />
+          ) : backendStatus === 'disconnected' ? (
+            <AlertCircle className="h-4 w-4" />
+          ) : (
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          )}
+          <span className="hidden sm:inline">
+            {backendStatus === 'connected' ? 'Backend Connected' : 
+             backendStatus === 'disconnected' ? 'Backend Offline' : 'Connecting...'}
+          </span>
+        </div>
+      </div>
+
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-20 w-32 h-32 bg-agi-yellow/20 rounded-full animate-float"></div>
@@ -26,16 +126,28 @@ const HeroSection = () => {
             </h1>
             
             <p className="text-xl text-white/90 mb-8 max-w-lg">
-              Discover the future of artificial general intelligence with cultural awareness and ethical considerations at its core.
+              {agiInfo?.message || "Discover the future of artificial general intelligence with cultural awareness and ethical considerations at its core."}
             </p>
 
             {/* Interactive Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
-              <Button variant="hero" size="lg" className="group">
+              <Button 
+                variant="hero" 
+                size="lg" 
+                className="group"
+                onClick={handleMeetDeeja}
+                disabled={backendStatus === 'loading'}
+              >
                 <Sparkles className="mr-2 h-5 w-5 group-hover:animate-spin" />
                 Meet Deeja
               </Button>
-              <Button variant="explore" size="lg" className="group">
+              <Button 
+                variant="explore" 
+                size="lg" 
+                className="group"
+                onClick={handleExploreAGI}
+                disabled={backendStatus === 'loading'}
+              >
                 <Brain className="mr-2 h-5 w-5 group-hover:animate-pulse" />
                 Explore AGI
               </Button>
@@ -46,19 +158,25 @@ const HeroSection = () => {
               <Card className="p-4 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 transition-all duration-300 group cursor-pointer">
                 <Brain className="h-8 w-8 text-agi-yellow mb-2 group-hover:animate-pulse" />
                 <h3 className="text-white font-semibold mb-1">AI Research</h3>
-                <p className="text-white/70 text-sm">Advanced research in AGI development</p>
+                <p className="text-white/70 text-sm">
+                  {agiInfo?.cultural_context.global_perspectives[0] || "Advanced research in AGI development"}
+                </p>
               </Card>
               
               <Card className="p-4 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 transition-all duration-300 group cursor-pointer">
                 <Sparkles className="h-8 w-8 text-agi-orange mb-2 group-hover:animate-spin" />
                 <h3 className="text-white font-semibold mb-1">Cultural AI</h3>
-                <p className="text-white/70 text-sm">Culturally aware intelligence systems</p>
+                <p className="text-white/70 text-sm">
+                  {agiInfo?.cultural_context.thai_culture.harmony || "Culturally aware intelligence systems"}
+                </p>
               </Card>
               
               <Card className="p-4 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 transition-all duration-300 group cursor-pointer">
                 <Zap className="h-8 w-8 text-primary mb-2 group-hover:animate-bounce" />
                 <h3 className="text-white font-semibold mb-1">Innovation</h3>
-                <p className="text-white/70 text-sm">Cutting-edge AI solutions</p>
+                <p className="text-white/70 text-sm">
+                  {agiInfo?.ethical_considerations.fairness || "Cutting-edge AI solutions"}
+                </p>
               </Card>
             </div>
           </div>
@@ -82,6 +200,13 @@ const HeroSection = () => {
               <div className="absolute -bottom-4 -left-4 w-10 h-10 bg-agi-orange rounded-full flex items-center justify-center animate-pulse">
                 <Zap className="h-5 w-5 text-white" />
               </div>
+              
+              {/* Deeja Status */}
+              {deejaInfo && (
+                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 text-xs text-white">
+                  {deejaInfo.greeting.thai}
+                </div>
+              )}
             </div>
           </div>
         </div>
