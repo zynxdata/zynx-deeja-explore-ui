@@ -91,12 +91,14 @@ export class APIKeyService {
     
     const encryptedKey = await this.encryptKey(apiKey);
     
-    // Use RPC or direct SQL since the table might not be in types yet
-    const { error } = await supabase.rpc('upsert_user_api_key', {
-      p_user_id: userId,
-      p_service_name: serviceName,
-      p_encrypted_key: encryptedKey
-    });
+    // Use upsert to either insert or update
+    const { error } = await supabase
+      .from('user_api_keys')
+      .upsert({
+        user_id: userId,
+        service_name: serviceName,
+        encrypted_key: encryptedKey
+      });
     
     if (error) {
       throw new Error(`Failed to save API key: ${error.message}`);
@@ -106,17 +108,19 @@ export class APIKeyService {
   static async getApiKey(serviceName: string, userId: string): Promise<string | null> {
     if (!userId) return null;
     
-    const { data, error } = await supabase.rpc('get_user_api_key', {
-      p_user_id: userId,
-      p_service_name: serviceName
-    });
+    const { data, error } = await supabase
+      .from('user_api_keys')
+      .select('encrypted_key')
+      .eq('user_id', userId)
+      .eq('service_name', serviceName)
+      .single();
     
     if (error || !data) {
       return null;
     }
     
     try {
-      return await this.decryptKey(data);
+      return await this.decryptKey(data.encrypted_key);
     } catch (error) {
       console.error('Failed to decrypt API key:', error);
       return null;
@@ -126,10 +130,11 @@ export class APIKeyService {
   static async deleteApiKey(serviceName: string, userId: string): Promise<void> {
     if (!userId) throw new Error('User not authenticated');
     
-    const { error } = await supabase.rpc('delete_user_api_key', {
-      p_user_id: userId,
-      p_service_name: serviceName
-    });
+    const { error } = await supabase
+      .from('user_api_keys')
+      .delete()
+      .eq('user_id', userId)
+      .eq('service_name', serviceName);
     
     if (error) {
       throw new Error(`Failed to delete API key: ${error.message}`);

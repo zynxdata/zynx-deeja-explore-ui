@@ -113,6 +113,30 @@ export type Database = {
           },
         ]
       }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       game_players: {
         Row: {
           ai_description: string | null
@@ -246,6 +270,47 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          emotion: string | null
+          id: string
+          reasoning: string | null
+          sender: string
+          sources: Json | null
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          emotion?: string | null
+          id?: string
+          reasoning?: string | null
+          sender: string
+          sources?: Json | null
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          emotion?: string | null
+          id?: string
+          reasoning?: string | null
+          sender?: string
+          sources?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -357,6 +422,33 @@ export type Database = {
           name?: string | null
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_api_keys: {
+        Row: {
+          created_at: string
+          encrypted_key: string
+          id: string
+          service_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          encrypted_key: string
+          id?: string
+          service_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          encrypted_key?: string
+          id?: string
+          service_name?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -494,6 +586,10 @@ export type Database = {
           message: string
         }[]
       }
+      delete_user_api_key: {
+        Args: { p_user_id: string; p_service_name: string }
+        Returns: undefined
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["app_role"]
@@ -506,6 +602,10 @@ export type Database = {
           count: number
           latest_event: string
         }[]
+      }
+      get_user_api_key: {
+        Args: { p_user_id: string; p_service_name: string }
+        Returns: string
       }
       has_role: {
         Args: {
@@ -536,6 +636,14 @@ export type Database = {
           success: boolean
           message: string
         }[]
+      }
+      upsert_user_api_key: {
+        Args: {
+          p_user_id: string
+          p_service_name: string
+          p_encrypted_key: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
