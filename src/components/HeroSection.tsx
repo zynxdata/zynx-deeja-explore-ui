@@ -1,8 +1,30 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Brain, Sparkles, Zap } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { getAGIInfo, meetDeeja } from "@/lib/api";
+import { useState } from "react";
+import DeejaModal from "./DeejaModal";
 
 const HeroSection = () => {
+  const [showDeeja, setShowDeeja] = useState(false);
+
+  const { data: agiData, isLoading: agiLoading } = useQuery({
+    queryKey: ['agi-info'],
+    queryFn: getAGIInfo,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const { data: deejaData, isLoading: deejaLoading } = useQuery({
+    queryKey: ['deeja-info'],
+    queryFn: meetDeeja,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const handleMeetDeeja = () => {
+    setShowDeeja(true);
+  };
+
   return (
     <section className="min-h-screen bg-hero-gradient flex items-center justify-center relative overflow-hidden">
       {/* Animated background elements */}
@@ -31,9 +53,15 @@ const HeroSection = () => {
 
             {/* Interactive Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
-              <Button variant="hero" size="lg" className="group">
+              <Button 
+                variant="hero" 
+                size="lg" 
+                className="group"
+                onClick={handleMeetDeeja}
+                disabled={deejaLoading}
+              >
                 <Sparkles className="mr-2 h-5 w-5 group-hover:animate-spin" />
-                Meet Deeja
+                {deejaLoading ? 'Loading...' : 'Meet Deeja'}
               </Button>
               <Button variant="explore" size="lg" className="group">
                 <Brain className="mr-2 h-5 w-5 group-hover:animate-pulse" />
@@ -46,19 +74,25 @@ const HeroSection = () => {
               <Card className="p-4 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 transition-all duration-300 group cursor-pointer">
                 <Brain className="h-8 w-8 text-agi-yellow mb-2 group-hover:animate-pulse" />
                 <h3 className="text-white font-semibold mb-1">AI Research</h3>
-                <p className="text-white/70 text-sm">Advanced research in AGI development</p>
+                <p className="text-white/70 text-sm">
+                  {agiLoading ? 'Loading...' : agiData?.cultural_context.global_perspectives[0] || 'Advanced research in AGI development'}
+                </p>
               </Card>
               
               <Card className="p-4 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 transition-all duration-300 group cursor-pointer">
                 <Sparkles className="h-8 w-8 text-agi-orange mb-2 group-hover:animate-spin" />
                 <h3 className="text-white font-semibold mb-1">Cultural AI</h3>
-                <p className="text-white/70 text-sm">Culturally aware intelligence systems</p>
+                <p className="text-white/70 text-sm">
+                  {agiLoading ? 'Loading...' : agiData?.cultural_context.thai_culture.harmony || 'Culturally aware intelligence systems'}
+                </p>
               </Card>
               
               <Card className="p-4 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 transition-all duration-300 group cursor-pointer">
                 <Zap className="h-8 w-8 text-primary mb-2 group-hover:animate-bounce" />
                 <h3 className="text-white font-semibold mb-1">Innovation</h3>
-                <p className="text-white/70 text-sm">Cutting-edge AI solutions</p>
+                <p className="text-white/70 text-sm">
+                  {agiLoading ? 'Loading...' : agiData?.ethical_considerations.transparency || 'Cutting-edge AI solutions'}
+                </p>
               </Card>
             </div>
           </div>
@@ -86,6 +120,14 @@ const HeroSection = () => {
           </div>
         </div>
       </div>
+
+      {/* Deeja Modal */}
+      <DeejaModal
+        isOpen={showDeeja}
+        onClose={() => setShowDeeja(false)}
+        deejaData={deejaData}
+        isLoading={deejaLoading}
+      />
     </section>
   );
 };

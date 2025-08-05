@@ -7,6 +7,23 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Backend
+backend/.env
+backend/logs/
+backend/__pycache__/
+backend/*.pyc
+backend/.pytest_cache/
+backend/coverage.xml
+backend/htmlcov/
+
+# Frontend
 node_modules
 dist
 dist-ssr
@@ -22,3 +39,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Docker
+.dockerignore
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
