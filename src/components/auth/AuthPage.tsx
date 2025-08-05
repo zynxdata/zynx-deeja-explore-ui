@@ -6,12 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 import { useAuth } from './AuthProvider';
 import { toast } from 'sonner';
-import { Shield, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { Shield, Mail, Lock, User, Eye, EyeOff, Chrome, Github } from 'lucide-react';
 import { useAdvancedInputValidation, enhancedEmailSchema, enhancedPasswordSchema } from '@/components/security/AdvancedInputValidator';
 import { useSecurityMonitor } from '@/hooks/useSecurityMonitor';
 import { useServerRateLimit } from '@/hooks/useServerRateLimit';
+import { signInWithGoogle, signInWithGitHub } from '@/services/authService';
 
 const AuthPage = () => {
   const { user, signIn, signUp } = useAuth();
@@ -233,6 +235,65 @@ const AuthPage = () => {
                 </>
               )}
             </Button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <Separator className="w-full" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  หรือดำเนินการด้วย
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={async () => {
+                  setLoading(true);
+                  try {
+                    const result = await signInWithGoogle();
+                    if (!result.success && result.message) {
+                      setError(result.message);
+                    }
+                  } catch (error) {
+                    setError('เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google');
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                disabled={loading}
+                className="w-full"
+              >
+                <Chrome className="h-4 w-4 mr-2" />
+                Google
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={async () => {
+                  setLoading(true);
+                  try {
+                    const result = await signInWithGitHub();
+                    if (!result.success && result.message) {
+                      setError(result.message);
+                    }
+                  } catch (error) {
+                    setError('เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย GitHub');
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                disabled={loading}
+                className="w-full"
+              >
+                <Github className="h-4 w-4 mr-2" />
+                GitHub
+              </Button>
+            </div>
 
             <div className="text-center">
               <Button
