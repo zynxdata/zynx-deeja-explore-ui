@@ -121,9 +121,9 @@ const ConnectionTest = () => {
 const App = () => {
   console.log('🔧 App: Initializing application...');
   return <SecureErrorBoundary>
-      <SecurityHeaders />
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
+          <SecurityHeaders />
           <AuthProvider>
             <ConnectionTest />
             <Toaster />
