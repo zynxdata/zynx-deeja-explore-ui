@@ -1,73 +1,225 @@
-# Welcome to your Lovable project
+# Zynx AGI - Culturally Aware Artificial General Intelligence
 
-## Project info
+![CI](https://img.shields.io/github/actions/workflow/status/zynx-agi/zynx-agi/ci.yml?branch=main)
+![Coverage](https://img.shields.io/codecov/c/github/zynx-agi/zynx-agi)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-**URL**: https://lovable.dev/projects/f0eb0436-dc51-448b-9de8-14249992fe37
+## 🌏 เกี่ยวกับโปรเจค (About the Project)
 
-## How can I edit this code?
+Zynx AGI เป็นระบบปัญญาประดิษฐ์ทั่วไปที่มีความตระหนักทางวัฒนธรรม (Culturally Aware AGI) ที่ออกแบบมาเพื่อให้เข้าใจและเคารพความหลากหลายทางวัฒนธรรม โดยเฉพาะวัฒนธรรมไทยและวัฒนธรรมอื่นๆ ทั่วโลก
 
-There are several ways of editing your application.
+Zynx AGI is a culturally aware artificial general intelligence system designed to understand and respect cultural diversity, with particular focus on Thai culture and other global cultures.
 
-**Use Lovable**
+## 🚀 Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/f0eb0436-dc51-448b-9de8-14249992fe37) and start prompting.
+### Frontend (React + Vite + TypeScript)
+- **Modern UI**: Built with shadcn/ui and Tailwind CSS
+- **Cultural Interface**: Thai-English hybrid interface
+- **Interactive Components**: Animated hero section with Deeja character
+- **API Integration**: Real-time connection to FastAPI backend
+- **Responsive Design**: Works on all devices
 
-Changes made via Lovable will be committed automatically to this repo.
+### Backend (FastAPI + Python)
+- **RESTful API**: Clean, documented endpoints
+- **Cultural Context**: Built-in Thai cultural awareness
+- **Logging**: Comprehensive logging with loguru
+- **Documentation**: Auto-generated OpenAPI docs
+- **Testing**: 80%+ pytest coverage
 
-**Use your preferred IDE**
+### DevOps & CI/CD
+- **Docker**: Containerized development and production
+- **GitHub Actions**: Automated lint → test → build → deploy
+- **Environment Management**: Secure .env handling
+- **Documentation**: Auto-generated API docs
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🛠️ การติดตั้ง (Installation)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Prerequisites
+- Node.js 18+ and npm
+- Python 3.11+
+- Docker (optional)
 
-Follow these steps:
+### Quick Start
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+```bash
+# Clone the repository
+git clone https://github.com/zynx-agi/zynx-agi.git
+cd zynx-agi
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Install frontend dependencies
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install backend dependencies
+cd backend
+pip install -r requirements.txt
+cd ..
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+# Set up environment files
+cp .env.example .env
+cp backend/.env.example backend/.env
+
+# Start development servers
+npm run dev          # Frontend (http://localhost:5173)
+cd backend && python main.py  # Backend (http://localhost:8000)
 ```
 
-**Edit a file directly in GitHub**
+### Docker Setup
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+# Start all services
+docker-compose up -d
 
-**Use GitHub Codespaces**
+# View logs
+docker-compose logs -f
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Stop services
+docker-compose down
+```
 
-## What technologies are used for this project?
+## 📚 API Documentation
 
-This project is built with:
+- **Interactive Docs**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+- **Health Check**: http://localhost:8000/health
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Key Endpoints
 
-## How can I deploy this project?
+```bash
+GET /health                    # Health check
+GET /api/v1/agi              # AGI information with cultural context
+GET /api/v1/deeja            # Meet Deeja - Cultural AGI Assistant
+```
 
-Simply open [Lovable](https://lovable.dev/projects/f0eb0436-dc51-448b-9de8-14249992fe37) and click on Share -> Publish.
+## 🧪 Testing
 
-## Can I connect a custom domain to my Lovable project?
+### Backend Tests
+```bash
+cd backend
+pytest test_main.py -v --cov=main --cov-report=html
+```
 
-Yes, you can!
+### Frontend Tests
+```bash
+npm run lint
+npm run build
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Docker Tests
+```bash
+docker-compose up -d
+curl http://localhost:8000/health
+curl http://localhost:5173
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## 🏗️ Project Structure
+
+```
+zynx-agi/
+├── src/                    # Frontend React components
+│   ├── components/         # UI components
+│   ├── lib/               # Utilities and API client
+│   └── pages/             # Page components
+├── backend/               # FastAPI backend
+│   ├── main.py           # Main application
+│   ├── test_main.py      # Test suite
+│   └── requirements.txt   # Python dependencies
+├── .github/workflows/     # CI/CD pipelines
+├── docker-compose.yml     # Docker orchestration
+└── README.md             # This file
+```
+
+## 🌍 Cultural Features
+
+### Thai Cultural Integration
+- **การเคารพ (Respect)**: Built-in respect for cultural norms
+- **ความสมดุล (Harmony)**: Balanced approach to AI interactions
+- **ชุมชน (Community)**: Community-focused AI design
+
+### Global Perspectives
+- **Cultural Sensitivity**: Multi-cultural awareness
+- **Ethical Considerations**: Responsible AI development
+- **Inclusive Design**: Accessible to diverse users
+
+## 🤖 Meet Deeja
+
+Deeja is our cultural AGI assistant with the following traits:
+- ✅ **Culturally Aware**: Understands cultural contexts
+- ✅ **Empathetic**: Shows emotional intelligence
+- ✅ **Ethical**: Makes responsible decisions
+- ✅ **Multilingual**: Speaks Thai and English
+
+## 🔧 Development
+
+### Code Style
+- **Frontend**: ESLint + Prettier
+- **Backend**: Black + flake8
+- **Commits**: Conventional commits (feat/fix/chore)
+
+### Environment Variables
+```bash
+# Frontend (.env)
+VITE_API_URL=http://localhost:8000
+
+# Backend (backend/.env)
+HOST=0.0.0.0
+PORT=8000
+ENVIRONMENT=development
+```
+
+## 🚀 Deployment
+
+### GitHub Actions Pipeline
+1. **Lint**: Code quality checks
+2. **Test**: Unit and integration tests
+3. **Build**: Documentation generation
+4. **Deploy**: Automated deployment
+
+### Manual Deployment
+```bash
+# Build frontend
+npm run build
+
+# Start backend
+cd backend && python main.py
+
+# Docker deployment
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+## 📊 Monitoring
+
+- **Health Checks**: `/health` endpoint
+- **Logs**: Structured logging with loguru
+- **Coverage**: 80%+ test coverage requirement
+- **Performance**: Docker health checks
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Commit Convention
+- `feat:` New features
+- `fix:` Bug fixes
+- `docs:` Documentation
+- `style:` Code style changes
+- `refactor:` Code refactoring
+- `test:` Test additions
+- `chore:` Maintenance tasks
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Thai Cultural Advisors**: For cultural sensitivity guidance
+- **AI Ethics Community**: For responsible AI development principles
+- **Open Source Contributors**: For the amazing tools and libraries
+
+---
+
+**Zynx AGI** - Building culturally aware artificial intelligence for a better world 🌏🤖
