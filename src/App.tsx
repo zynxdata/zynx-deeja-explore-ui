@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./components/auth/AuthProvider";
 import SecureErrorBoundary from "./components/security/SecureErrorBoundary";
 import SecurityHeaders from "./components/security/SecurityHeaders";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "./components/AppSidebar";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -122,13 +123,14 @@ const App = () => {
   console.log('🔧 App: Initializing application...');
   return <SecureErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <SecurityHeaders />
-          <AuthProvider>
-            <ConnectionTest />
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+        <LanguageProvider>
+          <TooltipProvider>
+            <SecurityHeaders />
+            <AuthProvider>
+              <ConnectionTest />
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
               <SidebarProvider>
                 <div className="min-h-screen flex w-full">
                   <AppSidebar />
@@ -159,8 +161,9 @@ const App = () => {
             </BrowserRouter>
           </AuthProvider>
         </TooltipProvider>
-      </QueryClientProvider>
-    </SecureErrorBoundary>;
+      </LanguageProvider>
+    </QueryClientProvider>
+  </SecureErrorBoundary>;
 };
 
 export default App;

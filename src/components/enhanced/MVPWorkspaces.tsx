@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { MessageCircle, Languages, FileSpreadsheet, Presentation, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const workspaces = [
   {
@@ -67,18 +68,17 @@ const workspaces = [
 ];
 
 export const MVPWorkspaces = () => {
+  const { t } = useLanguage();
+
   return (
     <section className="py-16 bg-gradient-to-b from-background/50 to-muted/30">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-agi-yellow bg-clip-text text-transparent">
-            5 MVP Workspaces
+            {t('workspace.title')}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Five powerful AI workspaces designed for the modern bilingual workflow
-          </p>
-          <p className="text-sm text-muted-foreground mt-2">
-            ห้าพื้นที่ทำงาน AI ที่ทรงพลังสำหรับเวิร์กโฟลว์สองภาษาสมัยใหม่
+            {t('workspace.subtitle')}
           </p>
         </div>
 
@@ -102,11 +102,8 @@ export const MVPWorkspaces = () => {
                           <Icon className={`h-6 w-6 ${workspace.color} group-hover:text-primary transition-colors`} />
                         </div>
                         <CardTitle className="text-base group-hover:text-primary transition-colors">
-                          {workspace.title}
+                          {t(`workspace.${workspace.id}`)}
                         </CardTitle>
-                        <CardDescription className="text-xs text-muted-foreground">
-                          {workspace.titleTh}
-                        </CardDescription>
                       </CardHeader>
                     </Card>
                   </Link>

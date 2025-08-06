@@ -6,10 +6,19 @@ import { Link } from "react-router-dom";
 import { ValueBanner } from "./enhanced/ValueBanner";
 import { MVPWorkspaces } from "./enhanced/MVPWorkspaces";
 import { TestimonialsSection } from "./enhanced/TestimonialsSection";
+import { LanguageSwitcher } from "./LanguageSwitcher";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const HeroSection = () => {
+  const { t, language } = useLanguage();
+
   return (
     <div className="min-h-screen bg-hero-gradient">
+      {/* Language Switcher - Fixed Position */}
+      <div className="fixed top-4 right-4 z-50">
+        <LanguageSwitcher />
+      </div>
+
       {/* Hero Section */}
       <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Animated background elements */}
@@ -27,7 +36,7 @@ const HeroSection = () => {
             <div className="mb-6">
               <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
                 <Heart className="h-4 w-4 text-agi-orange animate-pulse" />
-                <span className="text-white/90 text-sm font-medium">Zynx & Deeja Partnership</span>
+                <span className="text-white/90 text-sm font-medium">{t('hero.partnership')}</span>
                 <Heart className="h-4 w-4 text-agi-orange animate-pulse" />
               </div>
               
@@ -40,20 +49,16 @@ const HeroSection = () => {
               </h1>
               
               <div className="inline-block bg-gradient-to-r from-agi-yellow/20 to-agi-orange/20 backdrop-blur-sm rounded-full px-6 py-3 mb-4">
-                <span className="text-white font-semibold text-lg">AGI-First Context-as-a-Service</span>
+                <span className="text-white font-semibold text-lg">{t('hero.tagline')}</span>
               </div>
             </div>
             
-            <p className="text-xl text-white/90 mb-4 max-w-lg font-medium">
-              เราสร้าง AI ที่เข้าใจความเป็นมนุษย์
-            </p>
-            <p className="text-lg text-white/80 mb-6 max-w-lg">
-              We build AI that understands what it means to be human
+            <p className="text-xl text-white/90 mb-6 max-w-lg font-medium">
+              {t('hero.subtitle')}
             </p>
 
             <p className="text-lg text-white/70 mb-8 max-w-lg leading-relaxed">
-              Ship context-aware AI features 10x faster with our modular AGI framework. 
-              From emotional intelligence to cultural adaptation, Zynx & Deeja bring warmth and empathy to artificial intelligence.
+              {t('hero.description')}
             </p>
 
             {/* Main CTAs */}
@@ -61,43 +66,40 @@ const HeroSection = () => {
               <Button variant="hero" size="lg" className="group shadow-2xl" asChild>
                 <Link to="/admin-setup">
                   <Sparkles className="mr-2 h-5 w-5 group-hover:animate-spin" />
-                  Try Now - Start Free
+                  {t('hero.cta.try')}
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
               <Button variant="explore" size="lg" className="group" asChild>
                 <Link to="/chat">
                   <Brain className="mr-2 h-5 w-5 group-hover:animate-pulse" />
-                  Meet Deeja AI
+                  {t('hero.cta.meet')}
                 </Link>
               </Button>
             </div>
             
             <div className="text-sm text-white/60 mb-8">
-              ✨ No credit card required • 5-minute setup • Thai-English bilingual
+              {t('hero.disclaimer')}
             </div>
 
             {/* Value Props */}
             <div className="grid sm:grid-cols-3 gap-4 mt-8">
               <Card className="p-4 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 transition-all duration-300 group cursor-pointer">
                 <Network className="h-8 w-8 text-agi-yellow mb-2 group-hover:animate-pulse" />
-                <h3 className="text-white font-semibold mb-1">Context-as-a-Service</h3>
-                <p className="text-white/70 text-sm">บริการบริบทเชิงลึก</p>
-                <p className="text-white/60 text-xs">API-first contextual intelligence</p>
+                <h3 className="text-white font-semibold mb-1">{t('value.context.title')}</h3>
+                <p className="text-white/60 text-xs">{t('value.context.desc')}</p>
               </Card>
               
               <Card className="p-4 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 transition-all duration-300 group cursor-pointer">
                 <Heart className="h-8 w-8 text-agi-orange mb-2 group-hover:animate-pulse" />
-                <h3 className="text-white font-semibold mb-1">Emotional Intelligence</h3>
-                <p className="text-white/70 text-sm">ความฉลาดทางอารมณ์</p>
-                <p className="text-white/60 text-xs">AI that understands feelings & culture</p>
+                <h3 className="text-white font-semibold mb-1">{t('value.emotion.title')}</h3>
+                <p className="text-white/60 text-xs">{t('value.emotion.desc')}</p>
               </Card>
               
               <Card className="p-4 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 transition-all duration-300 group cursor-pointer">
                 <Brain className="h-8 w-8 text-primary mb-2 group-hover:animate-bounce" />
-                <h3 className="text-white font-semibold mb-1">Self-Learning</h3>
-                <p className="text-white/70 text-sm">การเรียนรู้ด้วยตัวเอง</p>
-                <p className="text-white/60 text-xs">Improves from every interaction</p>
+                <h3 className="text-white font-semibold mb-1">{t('value.learning.title')}</h3>
+                <p className="text-white/60 text-xs">{t('value.learning.desc')}</p>
               </Card>
             </div>
           </div>
@@ -139,11 +141,10 @@ const HeroSection = () => {
         {/* Features Section */}
         <div className="mt-20 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">
-            Production-Ready AI Components
+            {t('features.title')}
           </h2>
           <p className="text-white/70 mb-12 max-w-2xl mx-auto">
-            Pre-built, battle-tested components for translation, document processing, 
-            spreadsheet intelligence, and presentation automation. Deploy in minutes, not months.
+            {t('features.subtitle')}
           </p>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
