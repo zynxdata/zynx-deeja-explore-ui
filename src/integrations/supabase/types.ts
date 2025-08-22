@@ -95,6 +95,13 @@ export type Database = {
             referencedRelation: "game_players"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "category_performance_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "game_players_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       championship_defeats: {
@@ -137,6 +144,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "championship_defeats_defeated_champion_id_fkey"
+            columns: ["defeated_champion_id"]
+            isOneToOne: false
+            referencedRelation: "game_players_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "championship_defeats_leaderboard_id_fkey"
             columns: ["leaderboard_id"]
             isOneToOne: false
@@ -148,6 +162,13 @@ export type Database = {
             columns: ["new_champion_id"]
             isOneToOne: false
             referencedRelation: "game_players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "championship_defeats_new_champion_id_fkey"
+            columns: ["new_champion_id"]
+            isOneToOne: false
+            referencedRelation: "game_players_public"
             referencedColumns: ["id"]
           },
         ]
@@ -462,6 +483,13 @@ export type Database = {
             referencedRelation: "game_players"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "game_sessions_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "game_players_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       knowledge_base: {
@@ -537,6 +565,13 @@ export type Database = {
             columns: ["champion_player_id"]
             isOneToOne: false
             referencedRelation: "game_players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leaderboards_champion_player_id_fkey"
+            columns: ["champion_player_id"]
+            isOneToOne: false
+            referencedRelation: "game_players_public"
             referencedColumns: ["id"]
           },
         ]
@@ -870,6 +905,13 @@ export type Database = {
             referencedRelation: "game_players"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "zone_champions_champion_player_id_fkey"
+            columns: ["champion_player_id"]
+            isOneToOne: false
+            referencedRelation: "game_players_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       zynx_agi_tasks: {
@@ -910,7 +952,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      game_players_public: {
+        Row: {
+          ai_description: string | null
+          created_at: string | null
+          display_name: string | null
+          id: string | null
+          is_ai: boolean | null
+          user_id: string | null
+        }
+        Insert: {
+          ai_description?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string | null
+          is_ai?: boolean | null
+          user_id?: never
+        }
+        Update: {
+          ai_description?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string | null
+          is_ai?: boolean | null
+          user_id?: never
+        }
+        Relationships: []
+      }
     }
     Functions: {
       admin_get_user_count: {
@@ -968,6 +1036,13 @@ export type Database = {
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["app_role"]
+      }
+      get_public_user_profile: {
+        Args: { user_uuid: string }
+        Returns: {
+          created_at: string
+          username: string
+        }[]
       }
       get_security_summary: {
         Args: { time_window?: unknown }
